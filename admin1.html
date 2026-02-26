@@ -1,0 +1,515 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Daer – Dienstleister | Admin</title>
+<style>
+:root{
+  --bg:#0a0e18; --card:#141c2e; --card2:#0f1620; --text:#e8f0ff; --muted:#8b9dc3;
+  --line:#1e2a45; --btn:#1a2538; --hot:#00d4ff; --accent:#667eea;
+}
+body.light{
+  --bg:#f0f4f8; --card:#ffffff; --card2:#f7f9fc; --text:#1a202c; --muted:#718096;
+  --line:#cbd5e0; --btn:#edf2f7; --hot:#00a8cc; --accent:#5a67d8;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  background:var(--bg);color:var(--text);min-height:100vh;
+}
+.topbar{
+  position:sticky;top:0;z-index:100;
+  background:var(--card);border-bottom:2px solid var(--line);
+  padding:16px 20px;display:flex;justify-content:space-between;align-items:center;
+  flex-wrap:wrap;gap:12px;
+}
+h1{font-size:20px;font-weight:800;color:var(--hot)}
+.small{font-size:13px;color:var(--muted);margin-top:4px}
+.btns{display:flex;gap:10px;flex-wrap:wrap}
+button{
+  padding:10px 16px;border-radius:10px;border:2px solid var(--line);
+  background:var(--btn);color:var(--text);font-size:14px;font-weight:600;
+  cursor:pointer;transition:all .2s;
+}
+button:hover{transform:translateY(-1px);border-color:var(--hot)}
+button.primary{background:linear-gradient(135deg,var(--accent),var(--hot));color:#fff;border:none}
+button.danger{background:#dc2626;color:#fff;border:none}
+button.danger:hover{background:#b91c1c}
+input,select{
+  padding:10px 12px;border-radius:8px;border:2px solid var(--line);
+  background:var(--card2);color:var(--text);font-size:14px;
+}
+input:focus,select:focus{outline:none;border-color:var(--hot)}
+.container{max-width:1600px;margin:0 auto;padding:20px}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px;margin-bottom:24px}
+.card{background:var(--card);border:2px solid var(--line);border-radius:16px;padding:20px}
+.card h2{font-size:15px;text-transform:uppercase;letter-spacing:1px;color:var(--hot);margin-bottom:16px}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.hr{height:2px;background:var(--line);margin:16px 0}
+.emp{display:flex;gap:10px;align-items:center;margin-bottom:12px}
+.emp input[type="color"]{width:50px;height:42px;border-radius:8px;cursor:pointer}
+.chips{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
+.chip{
+  display:flex;align-items:center;gap:10px;padding:12px 16px;
+  background:var(--card2);border:2px solid var(--line);border-radius:12px;
+  cursor:grab;user-select:none;transition:all .2s;
+}
+.chip:hover{border-color:var(--hot);transform:scale(1.05)}
+.chip:active{cursor:grabbing}
+.swatch{width:16px;height:16px;border-radius:4px;border:2px solid var(--line)}
+.weeks{display:flex;flex-direction:column;gap:24px}
+.week{
+  background:var(--card);border:2px solid var(--hot);border-radius:16px;
+  padding:20px;box-shadow:0 4px 20px rgba(0,212,255,.1);
+}
+.weekTitle{
+  display:flex;justify-content:space-between;align-items:center;
+  margin-bottom:16px;padding-bottom:12px;border-bottom:2px solid var(--hot);
+}
+.weekTitle b{font-size:18px;color:var(--hot)}
+.grid{
+  display:grid;grid-template-columns:160px repeat(6,1fr);
+  gap:2px;background:var(--line);border:2px solid var(--line);border-radius:12px;overflow:hidden;
+}
+.cell,.head{
+  background:var(--card2);padding:12px;min-height:80px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;font-size:13px;
+}
+.head{background:var(--card);font-weight:700;color:var(--hot);min-height:50px}
+.empname{flex-direction:row;justify-content:flex-start;gap:10px}
+.dot{width:12px;height:12px;border-radius:50%}
+.cell{cursor:pointer;gap:6px;transition:background .2s}
+.cell:hover{background:var(--btn)}
+.cell.dropHot{background:rgba(0,212,255,.1);outline:3px dashed var(--hot);outline-offset:-3px}
+.tag{
+  width:100%;padding:8px 10px;border-radius:8px;font-weight:700;font-size:12px;
+  border:2px solid rgba(255,255,255,.2);display:flex;justify-content:space-between;
+  align-items:center;transition:transform .1s;
+}
+.tag:hover{transform:scale(1.05)}
+.tag .x{cursor:pointer;font-size:16px;opacity:.7}
+.tag .x:hover{opacity:1;color:#dc2626}
+#ghost{
+  position:fixed;left:-9999px;top:-9999px;z-index:9999;pointer-events:none;
+  padding:12px 18px;border-radius:10px;background:var(--hot);color:#000;
+  font-weight:900;box-shadow:0 10px 40px rgba(0,0,0,.3);
+}
+.toast{
+  position:fixed;bottom:20px;left:20px;z-index:9999;
+  background:var(--card);border:2px solid var(--hot);border-radius:12px;
+  padding:14px 20px;font-weight:600;box-shadow:0 10px 30px rgba(0,0,0,.3);
+  transform:translateY(100px);opacity:0;transition:all .3s;
+}
+.toast.show{transform:translateY(0);opacity:1}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div>
+    <h1>📅 Daer Dienstleister</h1>
+    <div class="small">Admin Panel • Keine Anmeldung erforderlich</div>
+  </div>
+  <div class="btns">
+    <button id="themeBtn">🌓 Modus</button>
+    <button class="primary" id="aiBtn">🧠 KI Planen</button>
+  </div>
+</div>
+
+<div class="container">
+  
+  <div class="cards">
+    
+    <div class="card">
+      <h2>📆 Plan Steuerung</h2>
+      <div class="row">
+        <input type="date" id="startDate" style="flex:1">
+        <button id="copyBtn">W1→W2-4</button>
+        <button class="danger" id="clearBtn">Löschen</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>🎨 Vorlagen</h2>
+      <div class="row">
+        <input id="tplName" placeholder="Name..." style="flex:1">
+        <select id="tplType">
+          <option value="einsatz">Einsatz</option>
+          <option value="urlaub">Urlaub</option>
+          <option value="krank">Krank</option>
+          <option value="frei">Frei</option>
+        </select>
+        <input type="color" id="tplColor" value="#00d4ff">
+        <button id="tplAdd">+</button>
+      </div>
+      <div class="chips" id="templates"></div>
+    </div>
+
+    <div class="card">
+      <h2>👥 Mitarbeiter</h2>
+      <div id="employees"></div>
+      <button id="empAdd" style="width:100%;margin-top:12px">+ Mitarbeiter</button>
+    </div>
+    
+  </div>
+
+  <div class="card" style="background:rgba(0,212,255,.05);border-color:var(--hot);margin-bottom:24px">
+    <h2 style="font-size:18px">📋 DIENSTPLAN - 4 WOCHEN</h2>
+    <div class="small">Klicke auf Zellen oder ziehe Vorlagen per Drag & Drop</div>
+  </div>
+
+  <div class="weeks" id="weeks">
+    <div style="text-align:center;padding:60px;color:var(--muted);font-size:16px">
+      Füge zuerst Mitarbeiter hinzu →
+    </div>
+  </div>
+
+</div>
+
+<div id="ghost"></div>
+<div class="toast" id="toast"></div>
+
+<script type="module">
+const firebaseConfig = {
+  apiKey: "AIzaSyDgjZr2yrOrbl2dUoY26fl8EenOL0Hh-H4",
+  authDomain: "daer-b525e.firebaseapp.com",
+  databaseURL: "https://daer-b525e-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "daer-b525e",
+  storageBucket: "daer-b525e.firebasestorage.app",
+  messagingSenderId: "992532370590",
+  appId: "1:992532370590:web:185d52a3dc6338b3ee978f"
+};
+
+import{initializeApp}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import{getDatabase,ref,set,onValue,push}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+const app=initializeApp(firebaseConfig);
+const db=getDatabase(app);
+const planRef=ref(db,"dienstplan");
+const eventsRef=ref(db,"events");
+
+let data={
+  start:"",
+  employees:[],
+  templates:[
+    {name:"Einsatz",type:"einsatz",color:"#00d4ff"},
+    {name:"Urlaub",type:"urlaub",color:"#fbbf24"},
+    {name:"Krank",type:"krank",color:"#ef4444"},
+    {name:"Frei",type:"frei",color:"#10b981"}
+  ],
+  assignments:{}
+};
+
+const $=id=>document.getElementById(id);
+const toast=(msg)=>{
+  const t=$("toast");
+  t.textContent=msg;
+  t.classList.add("show");
+  setTimeout(()=>t.classList.remove("show"),1500);
+};
+
+const todayISO=()=>{
+  const d=new Date();
+  const p=n=>String(n).padStart(2,"0");
+  return`${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`;
+};
+const addDays=(iso,days)=>{
+  if(!iso)return"";
+  const d=new Date(iso);
+  d.setDate(d.getDate()+days);
+  return d.toISOString().slice(0,10);
+};
+const mondayOfWeek=()=>{
+  const d=new Date();
+  const day=(d.getDay()+6)%7;
+  d.setDate(d.getDate()-day);
+  return d.toISOString().slice(0,10);
+};
+const esc=s=>(s??"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
+
+const save=()=>set(planRef,data);
+
+const load=()=>{
+  onValue(planRef,snap=>{
+    if(snap.exists()){
+      data=snap.val();
+    }else{
+      if(!data.start)data.start=mondayOfWeek();
+      save();
+    }
+    render();
+  });
+};
+
+$("themeBtn").onclick=()=>{
+  document.body.classList.toggle("light");
+  localStorage.setItem("theme",document.body.classList.contains("light")?"light":"dark");
+};
+
+if(localStorage.getItem("theme")==="light"){
+  document.body.classList.add("light");
+}
+
+const renderTemplates=()=>{
+  const box=$("templates");
+  box.innerHTML="";
+  (data.templates||[]).forEach((t,i)=>{
+    const d=document.createElement("div");
+    d.className="chip";
+    d.draggable=true;
+    d.dataset.idx=i;
+    d.innerHTML=`<span class="swatch" style="background:${t.color}"></span><b>${esc(t.name)}</b>`;
+    d.ondragstart=e=>e.dataTransfer.setData("text/plain",String(i));
+    setupDrag(d,i);
+    box.appendChild(d);
+  });
+};
+
+$("tplAdd").onclick=()=>{
+  const name=$("tplName").value.trim();
+  if(!name)return;
+  if(data.templates.some(x=>x.name.toLowerCase()===name.toLowerCase())){
+    toast("Existiert bereits!");
+    return;
+  }
+  data.templates.push({name,type:$("tplType").value,color:$("tplColor").value});
+  $("tplName").value="";
+  save();
+  renderTemplates();
+};
+
+$("empAdd").onclick=()=>{
+  data.employees.push({name:"Neu",color:"#00d4ff"});
+  save();
+  renderEmployees();
+  renderWeeks();
+};
+
+const renderEmployees=()=>{
+  const box=$("employees");
+  box.innerHTML="";
+  data.employees.forEach((e,i)=>{
+    const div=document.createElement("div");
+    div.className="emp";
+    div.innerHTML=`<input value="${esc(e.name)}" style="flex:1"><input type="color" value="${e.color}"><button class="danger">×</button>`;
+    const[inp,col,del]=div.querySelectorAll("input,button");
+    inp.oninput=()=>{data.employees[i].name=inp.value;save()};
+    col.oninput=()=>{data.employees[i].color=col.value;save();renderWeeks()};
+    del.onclick=()=>{data.employees.splice(i,1);save();renderEmployees();renderWeeks()};
+    box.appendChild(div);
+  });
+};
+
+const key=(w,r,d)=>`${w}-${r}-${d}`;
+
+const assign=(k,tpl)=>{
+  data.assignments[k]=data.assignments[k]||[];
+  if(data.assignments[k].includes(tpl.name)){
+    toast("Bereits vorhanden!");
+    return;
+  }
+  data.assignments[k].push(tpl.name);
+  if(tpl.type==="krank"){
+    push(eventsRef,{type:"krank",label:tpl.name,cellKey:k,at:new Date().toISOString(),by:"admin"});
+  }
+  save();
+  renderWeeks();
+};
+
+const remove=(k,name)=>{
+  data.assignments[k]=(data.assignments[k]||[]).filter(x=>x!==name);
+  if(!data.assignments[k].length)delete data.assignments[k];
+  save();
+  renderWeeks();
+};
+
+$("copyBtn").onclick=()=>{
+  if(!data.employees.length){toast("Erst Mitarbeiter!");return}
+  for(let r=0;r<data.employees.length;r++){
+    for(let d=0;d<6;d++){
+      const src=data.assignments[key(0,r,d)]||[];
+      for(let w=1;w<4;w++){
+        data.assignments[key(w,r,d)]=[...src];
+      }
+    }
+  }
+  save();
+  toast("Kopiert!");
+  renderWeeks();
+};
+
+$("clearBtn").onclick=()=>{
+  if(!confirm("Alles löschen?"))return;
+  data.assignments={};
+  save();
+  renderWeeks();
+};
+
+$("startDate").onchange=e=>{
+  data.start=e.target.value;
+  save();
+  renderWeeks();
+};
+
+$("aiBtn").onclick=()=>{
+  if(!data.employees.length){toast("Erst Mitarbeiter!");return}
+  if(!confirm("KI plant Woche 1?"))return;
+  
+  const einsatz=data.templates.find(t=>t.type==="einsatz")||data.templates[0];
+  if(!einsatz){toast("Keine Vorlage!");return}
+  
+  for(let r=0;r<data.employees.length;r++){
+    for(let d=0;d<6;d++){
+      const k=key(0,r,d);
+      const exist=data.assignments[k]||[];
+      const keep=exist.filter(n=>{
+        const t=data.templates.find(x=>x.name===n);
+        return t&&(t.type==="urlaub"||t.type==="krank"||t.type==="frei");
+      });
+      if(keep.length)data.assignments[k]=keep;
+      else delete data.assignments[k];
+    }
+  }
+  
+  for(let d=0;d<6;d++){
+    for(let off=0;off<data.employees.length;off++){
+      const r=(d+off)%data.employees.length;
+      const k=key(0,r,d);
+      const exist=data.assignments[k]||[];
+      const blocked=exist.some(n=>{
+        const t=data.templates.find(x=>x.name===n);
+        return t&&(t.type==="urlaub"||t.type==="krank"||t.type==="frei");
+      });
+      if(!blocked){
+        data.assignments[k]=data.assignments[k]||[];
+        if(!data.assignments[k].includes(einsatz.name)){
+          data.assignments[k].push(einsatz.name);
+        }
+        break;
+      }
+    }
+  }
+  
+  save();
+  toast("KI fertig!");
+};
+
+const renderWeeks=()=>{
+  const wrap=$("weeks");
+  wrap.innerHTML="";
+  
+  if(!data.employees.length){
+    wrap.innerHTML=`<div style="text-align:center;padding:60px;color:var(--muted);font-size:16px">Füge zuerst Mitarbeiter hinzu →</div>`;
+    return;
+  }
+  
+  for(let w=0;w<4;w++){
+    const weekStart=addDays(data.start,w*7);
+    const week=document.createElement("div");
+    week.className="week";
+    week.innerHTML=`<div class="weekTitle"><b>Woche ${w+1}</b><span style="color:var(--muted)">ab ${weekStart}</span></div>`;
+    
+    const grid=document.createElement("div");
+    grid.className="grid";
+    
+    const head=t=>{const d=document.createElement("div");d.className="head";d.textContent=t;return d};
+    
+    grid.appendChild(head("Mitarbeiter"));
+    ["Mo","Di","Mi","Do","Fr","Sa"].forEach(d=>grid.appendChild(head(d)));
+    
+    data.employees.forEach((emp,r)=>{
+      const ec=document.createElement("div");
+      ec.className="head empname";
+      ec.innerHTML=`<span class="dot" style="background:${emp.color}"></span><span>${esc(emp.name)}</span>`;
+      grid.appendChild(ec);
+      
+      for(let d=0;d<6;d++){
+        const k=key(w,r,d);
+        const cell=document.createElement("div");
+        cell.className="cell";
+        cell.dataset.key=k;
+        
+        cell.ondragover=e=>{e.preventDefault();cell.classList.add("dropHot")};
+        cell.ondragleave=()=>cell.classList.remove("dropHot");
+        cell.ondrop=e=>{
+          e.preventDefault();
+          cell.classList.remove("dropHot");
+          const idx=Number(e.dataTransfer.getData("text/plain"));
+          if(!isNaN(idx))assign(k,data.templates[idx]);
+        };
+        
+        (data.assignments[k]||[]).forEach(name=>{
+          const tpl=data.templates.find(t=>t.name===name)||{name,type:"einsatz",color:emp.color};
+          const tag=document.createElement("div");
+          tag.className="tag";
+          tag.style.background=tpl.color+"44";
+          tag.style.borderLeft=`4px solid ${tpl.color}`;
+          tag.innerHTML=`<span>${esc(tpl.name)}</span><span class="x">×</span>`;
+          tag.onclick=e=>{e.stopPropagation();remove(k,tpl.name)};
+          cell.appendChild(tag);
+        });
+        
+        cell.onclick=()=>{
+          const choice=prompt("Vorlage:\n"+data.templates.map(t=>t.name).join(", "));
+          if(!choice)return;
+          const tpl=data.templates.find(t=>t.name.toLowerCase()===choice.toLowerCase());
+          if(tpl)assign(k,tpl);
+          else toast("Nicht gefunden!");
+        };
+        
+        grid.appendChild(cell);
+      }
+    });
+    
+    week.appendChild(grid);
+    wrap.appendChild(week);
+  }
+};
+
+const render=()=>{
+  if(!data.start)data.start=mondayOfWeek();
+  $("startDate").value=data.start;
+  renderEmployees();
+  renderTemplates();
+  renderWeeks();
+};
+
+const ghost=$("ghost");
+let dragging=null;
+
+const setupDrag=(el,idx)=>{
+  el.onpointerdown=e=>{
+    el.setPointerCapture(e.pointerId);
+    dragging={idx,pid:e.pointerId};
+    ghost.textContent=data.templates[idx].name;
+    ghost.style.left=(e.clientX+12)+"px";
+    ghost.style.top=(e.clientY+12)+"px";
+    e.preventDefault();
+  };
+  el.onpointermove=e=>{
+    if(!dragging||dragging.pid!==e.pointerId)return;
+    ghost.style.left=(e.clientX+12)+"px";
+    ghost.style.top=(e.clientY+12)+"px";
+    const c=document.elementFromPoint(e.clientX,e.clientY)?.closest?.(".cell");
+    document.querySelectorAll(".cell.dropHot").forEach(x=>x.classList.remove("dropHot"));
+    if(c)c.classList.add("dropHot");
+    e.preventDefault();
+  };
+  el.onpointerup=e=>{
+    if(!dragging||dragging.pid!==e.pointerId)return;
+    const c=document.elementFromPoint(e.clientX,e.clientY)?.closest?.(".cell");
+    document.querySelectorAll(".cell.dropHot").forEach(x=>x.classList.remove("dropHot"));
+    ghost.style.left="-9999px";
+    if(c)assign(c.dataset.key,data.templates[dragging.idx]);
+    dragging=null;
+    e.preventDefault();
+  };
+  el.onpointercancel=()=>{ghost.style.left="-9999px";dragging=null};
+};
+
+load();
+</script>
+</body>
+</html>
