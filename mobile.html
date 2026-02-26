@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#00acc1">
+<title>Daer Dienstplan</title>
+<link rel="manifest" href="manifest.json">
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+:root {
+  --primary: #00acc1;
+  --bg: #f5f7fa;
+  --card: #ffffff;
+  --text: #1a202c;
+  --text-light: #718096;
+  --border: #e2e8f0;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+  --purple: #8b5cf6;
+  --safe-top: env(safe-area-inset-top);
+  --safe-bottom: env(safe-area-inset-bottom);
+}
+
+body.dark {
+  --primary: #4cc9f0;
+  --bg: #0f1419;
+  --card: #1a1f2e;
+  --text: #e2e8f0;
+  --text-light: #94a3b8;
+  --border: #2d3748;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  transition: background 0.3s, color 0.3s;
+}
+
+.app {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding-top: var(--safe-top);
+  padding-bottom: var(--safe-bottom);
+}
+
+/* Header */
+.header {
+  background: var(--card);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  position: relative;
+  z-index: 100;
+}
+
+.header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+}
+
+.header-title h1 {
+  font-size: 20px;
+  font-weight: 800;
+  margin-bottom: 2px;
+}
+
+.header-info {
+  display: flex;
+  gap: 12px;
+  font-size: 13px;
+  color: var(--text-light);
+  font-weight: 600;
+}
+
+.clock {
+  color: var(--primary);
+  font-weight: 700;
+}
+
+.theme-btn {
+  background: transparent;
+  border: 2px solid var(--primary);
+  color: var(--primary);
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.theme-btn:active {
+  transform: scale(0.95);
+  background: var(--primary);
+  color: white;
+}
+
+/* Week Selector */
+.week-selector {
+  background: var(--card);
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 1px solid var(--border);
+}
+
+.week-info {
+  text-align: center;
+  flex: 1;
+}
+
+.week-number {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--primary);
+  margin-bottom: 2px;
+}
+
+.week-date {
+  font-size: 13px;
+  color: var(--text-light);
+  font-weight: 600;
+}
+
+.nav-btn {
+  background: var(--bg);
+  border: none;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  font-size: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text);
+  cursor: pointer;
+  transition: all 0.2s;
+  font-weight: 700;
+}
+
+.nav-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.nav-btn:active:not(:disabled) {
+  transform: scale(0.95);
+  background: var(--primary);
+  color: white;
+}
+
+/* Content */
+.content {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  padding: 16px;
+}
+
+/* Calendar Grid */
+.calendar {
+  background: var(--card);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+/* Days Header */
+.days-header {
+  display: grid;
+  grid-template-columns: 80px repeat(6, 1fr);
+  background: var(--bg);
+  border-bottom: 2px solid var(--border);
+}
+
+.day-cell {
+  padding: 12px 4px;
+  text-align: center;
+  border-right: 1px solid var(--border);
+}
+
+.day-cell:last-child {
+  border-right: none;
+}
+
+.day-name {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--primary);
+  margin-bottom: 2px;
+}
+
+.day-date {
+  font-size: 11px;
+  color: var(--text-light);
+  font-weight: 600;
+}
+
+.day-cell.today .day-name {
+  color: var(--danger);
+}
+
+.day-cell.today .day-date {
+  color: var(--danger);
+  font-weight: 800;
+}
+
+/* Employee Rows */
+.employee-row {
+  display: grid;
+  grid-template-columns: 80px repeat(6, 1fr);
+  border-bottom: 1px solid var(--border);
+  min-height: 60px;
+}
+
+.employee-row:last-child {
+  border-bottom: none;
+}
+
+.employee-name {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 8px;
+  background: var(--bg);
+  border-right: 1px solid var(--border);
+  position: sticky;
+  left: 0;
+  z-index: 10;
+}
+
+.emp-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid var(--text);
+  flex-shrink: 0;
+}
+
+.emp-text {
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.day-entries {
+  padding: 8px 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  border-right: 1px solid var(--border);
+  position: relative;
+}
+
+.day-entries:last-child {
+  border-right: none;
+}
+
+.day-entries.today {
+  background: rgba(239,68,68,0.05);
+  outline: 2px solid var(--danger);
+  outline-offset: -2px;
+}
+
+.entry {
+  padding: 6px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 800;
+  text-align: center;
+  line-height: 1.2;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+  border: 1px solid rgba(0,0,0,0.1);
+  word-wrap: break-word;
+  hyphens: auto;
+}
+
+/* Stats */
+.stats {
+  background: var(--card);
+  margin: 16px 0;
+  padding: 16px;
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.stats-title {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--text-light);
+  margin-bottom: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  background: var(--bg);
+  border-radius: 12px;
+}
+
+.stat-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.stat-icon.einsatz { background: rgba(0,172,193,0.15); }
+.stat-icon.urlaub { background: rgba(245,158,11,0.15); }
+.stat-icon.krank { background: rgba(239,68,68,0.15); }
+.stat-icon.frei { background: rgba(16,185,129,0.15); }
+
+.stat-info {
+  flex: 1;
+}
+
+.stat-label {
+  font-size: 12px;
+  color: var(--text-light);
+  font-weight: 600;
+}
+
+.stat-value {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--text);
+}
+
+/* Toast */
+.toast {
+  position: fixed;
+  bottom: calc(80px + var(--safe-bottom));
+  left: 16px;
+  right: 16px;
+  background: var(--danger);
+  color: white;
+  padding: 16px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 14px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  transform: translateY(200px);
+  opacity: 0;
+  transition: all 0.3s;
+  z-index: 1000;
+}
+
+.toast.show {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+/* Loading */
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid var(--border);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.loading-text {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-light);
+}
+
+/* Pull to Refresh */
+.pull-refresh {
+  position: absolute;
+  top: -60px;
+  left: 0;
+  right: 0;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--primary);
+  font-size: 24px;
+  transition: transform 0.2s;
+}
+
+/* Swipe Indicator */
+.swipe-indicator {
+  position: fixed;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 40px;
+  opacity: 0;
+  transition: opacity 0.2s;
+  pointer-events: none;
+  z-index: 999;
+}
+
+.swipe-indicator.left {
+  left: 20px;
+}
+
+.swipe-indicator.right {
+  right: 20px;
+}
+
+.swipe-indicator.show {
+  opacity: 0.5;
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+  
+  <!-- Header -->
+  <div class="header">
+    <div class="header-top">
+      <div class="header-title">
+        <h1>Daer Dienstplan</h1>
+        <div class="header-info">
+          <span class="clock" id="clock">--:--</span>
+          <span id="weather">-</span>
+        </div>
+      </div>
+      <button class="theme-btn" id="themeBtn">🌓</button>
+    </div>
+    
+    <div class="week-selector">
+      <button class="nav-btn" id="prevWeek">←</button>
+      <div class="week-info">
+        <div class="week-number" id="weekNumber">Woche 1</div>
+        <div class="week-date" id="weekDate">-</div>
+      </div>
+      <button class="nav-btn" id="nextWeek">→</button>
+    </div>
+  </div>
+
+  <!-- Content -->
+  <div class="content" id="content">
+    <div class="pull-refresh" id="pullRefresh">↻</div>
+    
+    <div class="calendar" id="calendar">
+      <div class="loading">
+        <div class="spinner"></div>
+        <div class="loading-text">Lade Dienstplan...</div>
+      </div>
+    </div>
+
+    <div class="stats" id="statsSection" style="display:none">
+      <div class="stats-title">Statistik</div>
+      <div class="stats-grid" id="statsGrid"></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Swipe Indicators -->
+<div class="swipe-indicator left" id="swipeLeft">←</div>
+<div class="swipe-indicator right" id="swipeRight">→</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script type="module">
+const firebaseConfig = {
+  apiKey: "AIzaSyDgjZr2yrOrbl2dUoY26fl8EenOL0Hh-H4",
+  authDomain: "daer-b525e.firebaseapp.com",
+  databaseURL: "https://daer-b525e-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "daer-b525e",
+  storageBucket: "daer-b525e.firebasestorage.app",
+  messagingSenderId: "992532370590",
+  appId: "1:992532370590:web:185d52a3dc6338b3ee978f"
+};
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, onValue, query, limitToLast } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+const planRef = ref(db, "dienstplan");
+const eventsRef = query(ref(db, "events"), limitToLast(1));
+
+const $ = id => document.getElementById(id);
+let currentWeek = 0;
+let planData = null;
+
+// Theme
+const savedTheme = localStorage.getItem('mobile-theme') || 'light';
+if (savedTheme === 'dark') document.body.classList.add('dark');
+
+$('themeBtn').onclick = () => {
+  document.body.classList.toggle('dark');
+  const theme = document.body.classList.contains('dark') ? 'dark' : 'light';
+  localStorage.setItem('mobile-theme', theme);
+};
+
+// Clock
+function updateClock() {
+  $('clock').textContent = new Date().toLocaleTimeString('de-DE', {hour: '2-digit', minute: '2-digit'});
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+// Weather
+async function loadWeather() {
+  try {
+    const res = await fetch('https://api.open-meteo.com/v1/forecast?latitude=52.69&longitude=13.17&current_weather=true');
+    const data = await res.json();
+    $('weather').textContent = `${Math.round(data.current_weather.temperature)}°C`;
+  } catch(e) {
+    $('weather').textContent = '';
+  }
+}
+loadWeather();
+setInterval(loadWeather, 10 * 60 * 1000);
+
+// Helpers
+const todayISO = () => {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+};
+
+const addDays = (iso, days) => {
+  const d = new Date(iso);
+  d.setDate(d.getDate() + days);
+  return d.toISOString().slice(0, 10);
+};
+
+const formatDate = iso => {
+  const d = new Date(iso);
+  return `${String(d.getDate()).padStart(2,'0')}.${String(d.getMonth()+1).padStart(2,'0')}.`;
+};
+
+const formatDateFull = iso => {
+  const d = new Date(iso);
+  return `${String(d.getDate()).padStart(2,'0')}.${String(d.getMonth()+1).padStart(2,'0')}.${d.getFullYear()}`;
+};
+
+const diffDays = (a, b) => {
+  return Math.floor((new Date(b) - new Date(a)) / (1000*60*60*24));
+};
+
+const isDark = hex => {
+  if (!hex || hex[0] !== '#') return false;
+  const r = parseInt(hex.slice(1,3), 16);
+  const g = parseInt(hex.slice(3,5), 16);
+  const b = parseInt(hex.slice(5,7), 16);
+  return (0.2126*r + 0.7152*g + 0.0722*b) / 255 < 0.6;
+};
+
+const esc = s => (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+function findCurrentWeek(startDate) {
+  const age = diffDays(startDate, todayISO());
+  return (age >= 0 && age < 28) ? Math.floor(age / 7) : 0;
+}
+
+// Render
+function render() {
+  if (!planData) return;
+  
+  const weekStart = addDays(planData.start, currentWeek * 7);
+  const weekEnd = addDays(weekStart, 5);
+  
+  $('weekNumber').textContent = `Woche ${currentWeek + 1}`;
+  $('weekDate').textContent = `${formatDateFull(weekStart)} - ${formatDateFull(weekEnd)}`;
+  
+  const age = diffDays(planData.start, todayISO());
+  const todayWeek = (age >= 0 && age < 28) ? Math.floor(age / 7) : -1;
+  const todayDay = (age >= 0 && age < 28) ? age % 7 : -1;
+  
+  const templates = new Map((planData.templates || []).map(t => [t.name, t]));
+  const days = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
+  const employees = planData.employees || [];
+  
+  let stats = {einsatz: 0, urlaub: 0, krank: 0, frei: 0};
+  
+  // Calendar
+  const cal = $('calendar');
+  cal.innerHTML = '';
+  
+  // Days Header
+  const daysHeader = document.createElement('div');
+  daysHeader.className = 'days-header';
+  daysHeader.innerHTML = '<div class="day-cell"><div class="emp-text">MA</div></div>';
+  
+  days.forEach((day, idx) => {
+    const isToday = currentWeek === todayWeek && idx === todayDay;
+    const dateStr = formatDate(addDays(weekStart, idx));
+    daysHeader.innerHTML += `
+      <div class="day-cell ${isToday ? 'today' : ''}">
+        <div class="day-name">${day}</div>
+        <div class="day-date">${dateStr}</div>
+      </div>
+    `;
+  });
+  
+  cal.appendChild(daysHeader);
+  
+  // Employee Rows
+  employees.forEach((emp, r) => {
+    const row = document.createElement('div');
+    row.className = 'employee-row';
+    
+    row.innerHTML = `
+      <div class="employee-name">
+        <span class="emp-dot" style="background:${emp.color}"></span>
+        <span class="emp-text">${esc(emp.name)}</span>
+      </div>
+    `;
+    
+    for (let d = 0; d < 6; d++) {
+      const isToday = currentWeek === todayWeek && d === todayDay;
+      const key = `${currentWeek}-${r}-${d}`;
+      const items = planData.assignments?.[key] || [];
+      
+      const dayDiv = document.createElement('div');
+      dayDiv.className = `day-entries ${isToday ? 'today' : ''}`;
+      
+      items.forEach(name => {
+        const tpl = templates.get(name) || {name, type: 'einsatz', color: emp.color};
+        const entry = document.createElement('div');
+        entry.className = 'entry';
+        entry.style.background = tpl.color;
+        entry.style.color = isDark(tpl.color) ? '#fff' : '#000';
+        entry.textContent = name;
+        dayDiv.appendChild(entry);
+        
+        if (tpl.type === 'urlaub') stats.urlaub++;
+        else if (tpl.type === 'krank') stats.krank++;
+        else if (tpl.type === 'frei') stats.frei++;
+        else stats.einsatz++;
+      });
+      
+      row.appendChild(dayDiv);
+    }
+    
+    cal.appendChild(row);
+  });
+  
+  // Stats
+  const statsGrid = $('statsGrid');
+  statsGrid.innerHTML = `
+    <div class="stat-item">
+      <div class="stat-icon einsatz">💼</div>
+      <div class="stat-info">
+        <div class="stat-label">Einsatz</div>
+        <div class="stat-value">${stats.einsatz}</div>
+      </div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-icon urlaub">🏖️</div>
+      <div class="stat-info">
+        <div class="stat-label">Urlaub</div>
+        <div class="stat-value">${stats.urlaub}</div>
+      </div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-icon krank">🤒</div>
+      <div class="stat-info">
+        <div class="stat-label">Krank</div>
+        <div class="stat-value">${stats.krank}</div>
+      </div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-icon frei">✨</div>
+      <div class="stat-info">
+        <div class="stat-label">Frei</div>
+        <div class="stat-value">${stats.frei}</div>
+      </div>
+    </div>
+  `;
+  
+  $('statsSection').style.display = 'block';
+  
+  // Update buttons
+  $('prevWeek').disabled = currentWeek === 0;
+  $('nextWeek').disabled = currentWeek === 3;
+}
+
+// Navigation
+$('prevWeek').onclick = () => {
+  if (currentWeek > 0) {
+    currentWeek--;
+    render();
+  }
+};
+
+$('nextWeek').onclick = () => {
+  if (currentWeek < 3) {
+    currentWeek++;
+    render();
+  }
+};
+
+// Swipe Gestures
+let touchStartX = 0;
+let touchEndX = 0;
+
+const content = $('content');
+
+content.addEventListener('touchstart', e => {
+  touchStartX = e.changedTouches[0].screenX;
+}, {passive: true});
+
+content.addEventListener('touchmove', e => {
+  touchEndX = e.changedTouches[0].screenX;
+  const diff = touchStartX - touchEndX;
+  
+  if (Math.abs(diff) > 50) {
+    if (diff > 0 && currentWeek < 3) {
+      $('swipeRight').classList.add('show');
+      $('swipeLeft').classList.remove('show');
+    } else if (diff < 0 && currentWeek > 0) {
+      $('swipeLeft').classList.add('show');
+      $('swipeRight').classList.remove('show');
+    }
+  }
+}, {passive: true});
+
+content.addEventListener('touchend', e => {
+  $('swipeLeft').classList.remove('show');
+  $('swipeRight').classList.remove('show');
+  
+  const diff = touchStartX - touchEndX;
+  
+  if (Math.abs(diff) > 100) {
+    if (diff > 0 && currentWeek < 3) {
+      currentWeek++;
+      render();
+    } else if (diff < 0 && currentWeek > 0) {
+      currentWeek--;
+      render();
+    }
+  }
+}, {passive: true});
+
+// Pull to Refresh
+let pullStartY = 0;
+let isPulling = false;
+
+content.addEventListener('touchstart', e => {
+  if (content.scrollTop === 0) {
+    pullStartY = e.touches[0].clientY;
+    isPulling = true;
+  }
+}, {passive: true});
+
+content.addEventListener('touchmove', e => {
+  if (!isPulling || content.scrollTop > 0) return;
+  
+  const pullDistance = e.touches[0].clientY - pullStartY;
+  if (pullDistance > 0) {
+    const pullRefresh = $('pullRefresh');
+    pullRefresh.style.transform = `translateY(${Math.min(pullDistance, 80)}px)`;
+  }
+}, {passive: true});
+
+content.addEventListener('touchend', e => {
+  if (!isPulling) return;
+  
+  const pullRefresh = $('pullRefresh');
+  const pullDistance = parseFloat(pullRefresh.style.transform.match(/\d+/)?.[0] || 0);
+  
+  if (pullDistance > 60) {
+    location.reload();
+  }
+  
+  pullRefresh.style.transform = '';
+  isPulling = false;
+}, {passive: true});
+
+// Load Data
+onValue(planRef, snap => {
+  if (snap.exists()) {
+    planData = snap.val();
+    currentWeek = findCurrentWeek(planData.start);
+    render();
+  }
+});
+
+// Events
+onValue(eventsRef, snap => {
+  if (!snap.exists()) return;
+  const obj = snap.val();
+  const lastKey = Object.keys(obj)[0];
+  const ev = obj[lastKey];
+  if (ev?.type === 'krank') {
+    const toast = $('toast');
+    toast.textContent = `🚨 ${ev.label} krank gemeldet`;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 5000);
+  }
+});
+
+// Register Service Worker
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/sw.js').catch(() => {});
+}
+</script>
+
+</body>
+</html>
