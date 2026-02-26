@@ -1,0 +1,587 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Daer – Dienstleister | TV</title>
+<style>
+:root {
+  --bg: #0b1020;
+  --card-bg: #141c30;
+  --text: #fff;
+  --header-bg: #1c2842;
+  --border: #2b3a55;
+  --accent: #4cc9f0;
+  --today-glow: rgba(0,255,204,.9);
+}
+
+body.light {
+  --bg: #f0f4f8;
+  --card-bg: #ffffff;
+  --text: #1a202c;
+  --header-bg: #e6f7f9;
+  --border: #cbd5e0;
+  --accent: #00acc1;
+  --today-glow: rgba(0,172,193,.9);
+}
+
+html,body{
+  margin:0;
+  height:100%;
+  background:var(--bg);
+  color:var(--text);
+  font-family:Arial,Helvetica,sans-serif;
+  overflow:hidden;
+  transition:background 0.3s, color 0.3s;
+}
+
+.wrapper{
+  height:100%;
+  padding:3vh 3vw;
+  box-sizing:border-box;
+  display:flex;
+  flex-direction:column;
+}
+
+.top{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:3vh;
+}
+
+.top-left{
+  display:flex;
+  flex-direction:column;
+}
+
+h1{
+  margin:0;
+  font-size:4vh;
+  letter-spacing:.5px;
+  font-weight:800;
+}
+
+.meta{
+  font-size:1.8vh;
+  opacity:.85;
+  margin-top:1vh;
+  display:flex;
+  gap:2vw;
+  align-items:center;
+}
+
+.meta .clock{
+  font-size:2.6vh;
+  font-weight:800;
+  color:var(--accent);
+}
+
+.theme-toggle{
+  background:var(--card-bg);
+  border:2px solid var(--accent);
+  color:var(--text);
+  padding:1.2vh 1.8vw;
+  border-radius:10px;
+  cursor:pointer;
+  font-size:2vh;
+  font-weight:700;
+  transition:all 0.3s;
+}
+
+.theme-toggle:hover{
+  transform:scale(1.05);
+  box-shadow:0 4px 12px rgba(0,0,0,0.2);
+}
+
+.week-nav{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:3vw;
+  margin-bottom:2vh;
+  background:var(--card-bg);
+  padding:2vh 3vw;
+  border-radius:16px;
+  box-shadow:0 2px 12px rgba(0,0,0,0.1);
+}
+
+.week-nav button{
+  background:var(--accent);
+  color:#fff;
+  border:none;
+  padding:1.5vh 3vw;
+  border-radius:10px;
+  font-size:2.5vh;
+  font-weight:900;
+  cursor:pointer;
+  transition:all 0.2s;
+  min-width:8vw;
+}
+
+.week-nav button:hover{
+  transform:scale(1.1);
+  box-shadow:0 4px 16px rgba(0,0,0,0.3);
+}
+
+.week-nav button:active{
+  transform:scale(0.95);
+}
+
+.week-info{
+  text-align:center;
+  font-size:3vh;
+  font-weight:800;
+  color:var(--accent);
+  min-width:30vw;
+}
+
+.week-info .week-number{
+  font-size:2.2vh;
+  opacity:0.8;
+  margin-bottom:0.5vh;
+}
+
+.week-info .week-date{
+  font-size:1.8vh;
+  opacity:0.7;
+}
+
+.week-container{
+  flex:1;
+  background:var(--card-bg);
+  border-radius:20px;
+  padding:2vh 2vw;
+  box-shadow:0 4px 20px rgba(0,0,0,0.15);
+  display:flex;
+  flex-direction:column;
+}
+
+.grid{
+  flex:1;
+  display:grid;
+  grid-template-columns:18vw repeat(6,1fr);
+  gap:2px;
+  background:var(--border);
+  border:3px solid var(--border);
+  border-radius:16px;
+  overflow:hidden;
+}
+
+.grid-cell{
+  background:var(--card-bg);
+  padding:1.2vh 0.8vw;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:flex-start;
+  gap:0.8vh;
+  position:relative;
+}
+
+.grid-header{
+  background:var(--header-bg);
+  font-weight:900;
+  font-size:2.2vh;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:0.5vh;
+  padding:1.5vh 0.8vw;
+}
+
+.dayName{
+  font-size:2.5vh;
+  font-weight:900;
+  color:var(--accent);
+}
+
+.dayDate{
+  font-size:1.6vh;
+  opacity:0.75;
+}
+
+.emp-header{
+  flex-direction:row;
+  justify-content:flex-start;
+  gap:1vw;
+  padding-left:1.5vw;
+}
+
+.dot{
+  width:18px;
+  height:18px;
+  border-radius:50%;
+  border:3px solid var(--text);
+  flex-shrink:0;
+}
+
+.emp-name{
+  font-size:2vh;
+  font-weight:900;
+}
+
+.box{
+  width:100%;
+  padding:0.8vh 0.6vw;
+  border-radius:10px;
+  font-weight:900;
+  font-size:1.8vh;
+  line-height:1.4;
+  text-align:center;
+  box-shadow:0 2px 4px rgba(0,0,0,0.1);
+}
+
+.today-cell{
+  outline:5px solid var(--today-glow);
+  box-shadow:0 0 40px var(--today-glow);
+  animation:pulse 2.5s ease-in-out infinite;
+}
+
+.today-cell::before{
+  content:'';
+  position:absolute;
+  top:0;
+  left:0;
+  right:0;
+  bottom:0;
+  background:var(--today-glow);
+  opacity:0.15;
+  pointer-events:none;
+  z-index:1;
+}
+
+.today-cell > *{
+  position:relative;
+  z-index:2;
+}
+
+@keyframes pulse{
+  0%,100%{
+    box-shadow:0 0 25px var(--today-glow);
+    outline-width:5px;
+  }
+  50%{
+    box-shadow:0 0 50px var(--today-glow);
+    outline-width:6px;
+  }
+}
+
+.stats{
+  position:fixed;
+  right:3vw;
+  bottom:2vh;
+  font-size:2vh;
+  opacity:.95;
+  background:var(--card-bg);
+  border:3px solid var(--accent);
+  border-radius:16px;
+  padding:1.5vh 2vw;
+  font-weight:700;
+  color:var(--accent);
+  box-shadow:0 4px 16px rgba(0,0,0,0.2);
+}
+
+.banner{
+  position:fixed;
+  left:50%;
+  top:2vh;
+  transform:translateX(-50%);
+  background:rgba(249,65,68,.95);
+  border:2px solid rgba(255,255,255,.25);
+  border-radius:16px;
+  padding:1.5vh 2.5vw;
+  font-weight:900;
+  display:none;
+  box-shadow:0 20px 40px rgba(0,0,0,.4);
+  font-size:2.2vh;
+}
+</style>
+</head>
+<body>
+
+<button class="theme-toggle" id="themeToggle">🌓</button>
+
+<div class="wrapper">
+  <div class="top">
+    <div class="top-left">
+      <h1>Daer – Dienstleister</h1>
+      <div class="meta">
+        <div class="clock" id="clock"></div>
+        <div id="month"></div>
+        <div id="weather"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="week-nav">
+    <button id="prevWeek">← Vorherige</button>
+    <div class="week-info">
+      <div class="week-number" id="weekNumber">Woche 1</div>
+      <div class="week-date" id="weekDate">24.02.2025 - 01.03.2025</div>
+    </div>
+    <button id="nextWeek">Nächste →</button>
+  </div>
+
+  <div class="week-container" id="weekContainer">
+    <!-- Grid wird hier eingefügt -->
+  </div>
+
+  <div class="stats" id="stats">…</div>
+</div>
+
+<div class="banner" id="banner">🚨 Krank gemeldet</div>
+
+<script type="module">
+const firebaseConfig = {
+  apiKey: "AIzaSyDgjZr2yrOrbl2dUoY26fl8EenOL0Hh-H4",
+  authDomain: "daer-b525e.firebaseapp.com",
+  databaseURL: "https://daer-b525e-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "daer-b525e",
+  storageBucket: "daer-b525e.firebasestorage.app",
+  messagingSenderId: "992532370590",
+  appId: "1:992532370590:web:185d52a3dc6338b3ee978f"
+};
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, onValue, query, limitToLast } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+const planRef = ref(db,"dienstplan");
+const eventsRef = query(ref(db,"events"), limitToLast(1));
+
+const $ = (id)=>document.getElementById(id);
+
+let currentWeekIndex = 0;
+let planData = null;
+
+// Theme Toggle
+const savedTheme = localStorage.getItem('tv-theme');
+if (savedTheme === 'light') {
+  document.body.classList.add('light');
+}
+$('themeToggle').onclick = () => {
+  document.body.classList.toggle('light');
+  const theme = document.body.classList.contains('light') ? 'light' : 'dark';
+  localStorage.setItem('tv-theme', theme);
+};
+
+function updateClock(){
+  const now=new Date();
+  $("clock").textContent = now.toLocaleTimeString("de-DE");
+}
+setInterval(updateClock,1000); 
+updateClock();
+
+function updateMonth(startISO){
+  if(!startISO) return;
+  const d=new Date(startISO);
+  $("month").textContent = d.toLocaleDateString("de-DE",{month:"long", year:"numeric"});
+}
+
+async function loadWeather(){
+  const url="https://api.open-meteo.com/v1/forecast?latitude=52.69&longitude=13.17&current_weather=true";
+  try{
+    const res=await fetch(url,{cache:"no-store"});
+    const j=await res.json();
+    $("weather").textContent = "Velten 🌤 " + Math.round(j.current_weather.temperature) + "°C";
+  }catch(e){
+    $("weather").textContent = "Velten 🌤 …";
+  }
+}
+setInterval(loadWeather, 10*60*1000); 
+loadWeather();
+
+function todayISO(){
+  const d=new Date(); 
+  const p=n=>String(n).padStart(2,"0");
+  return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`;
+}
+
+function diffDays(aIso,bIso){
+  const a=new Date(aIso); 
+  const b=new Date(bIso);
+  return Math.floor((b-a)/(1000*60*60*24));
+}
+
+function addDays(iso, days){
+  if(!iso) return "";
+  const d=new Date(iso); 
+  d.setDate(d.getDate()+days);
+  return d.toISOString().slice(0,10);
+}
+
+function formatDate(iso){
+  if(!iso) return "";
+  const d=new Date(iso);
+  const day = String(d.getDate()).padStart(2,"0");
+  const month = String(d.getMonth()+1).padStart(2,"0");
+  const year = d.getFullYear();
+  return `${day}.${month}.${year}`;
+}
+
+function isDark(hex){
+  if(!hex || hex[0]!=="#" || hex.length<7) return false;
+  const r=parseInt(hex.slice(1,3),16), g=parseInt(hex.slice(3,5),16), b=parseInt(hex.slice(5,7),16);
+  const lum=(0.2126*r+0.7152*g+0.0722*b)/255;
+  return lum<0.55;
+}
+
+function findCurrentWeek(startDate){
+  const age = diffDays(startDate, todayISO());
+  if(age >= 0 && age < 28){
+    return Math.floor(age / 7);
+  }
+  return 0;
+}
+
+function renderWeek(){
+  if(!planData) return;
+  
+  const container = $('weekContainer');
+  container.innerHTML = '';
+  
+  const weekStart = addDays(planData.start, currentWeekIndex * 7);
+  const weekEnd = addDays(weekStart, 5);
+  
+  $('weekNumber').textContent = `Woche ${currentWeekIndex + 1}`;
+  $('weekDate').textContent = `${formatDate(weekStart)} - ${formatDate(weekEnd)}`;
+  
+  updateMonth(planData.start);
+  
+  const age = planData.start ? diffDays(planData.start, todayISO()) : -1;
+  const todayWeek = (age>=0 && age<28) ? Math.floor(age/7) : -1;
+  const todayDay  = (age>=0 && age<28) ? (age%7) : -1;
+  
+  const templates = planData.templates || [];
+  const tByName = new Map(templates.map(t=>[t.name,t]));
+  
+  let stats = {einsatz:0, urlaub:0, krank:0, frei:0};
+  
+  const grid = document.createElement("div");
+  grid.className = "grid";
+  
+  const dayNames = ["Mo","Di","Mi","Do","Fr","Sa"];
+  
+  // Header
+  const headerCell = document.createElement("div");
+  headerCell.className = "grid-header emp-header";
+  headerCell.innerHTML = '<span class="emp-name">Mitarbeiter</span>';
+  grid.appendChild(headerCell);
+  
+  dayNames.forEach((dayName, dayIdx)=>{
+    const dateISO = addDays(weekStart, dayIdx);
+    const dateFormatted = formatDate(dateISO);
+    const cell = document.createElement("div");
+    cell.className = "grid-header";
+    cell.innerHTML = `<div class="dayName">${dayName}</div><div class="dayDate">${dateFormatted}</div>`;
+    grid.appendChild(cell);
+  });
+  
+  // Rows
+  (planData.employees||[]).forEach((emp,r)=>{
+    const empCell = document.createElement("div");
+    empCell.className = "grid-header emp-header";
+    empCell.innerHTML = `<span class="dot" style="background:${emp.color}"></span><span class="emp-name">${esc(emp.name)}</span>`;
+    grid.appendChild(empCell);
+    
+    for(let d=0; d<6; d++){
+      const k = `${currentWeekIndex}-${r}-${d}`;
+      const cell = document.createElement("div");
+      cell.className = "grid-cell";
+      
+      // Markiere heutigen Tag
+      if(currentWeekIndex === todayWeek && d === todayDay){
+        cell.classList.add("today-cell");
+      }
+      
+      const items = (planData.assignments && planData.assignments[k]) ? planData.assignments[k] : [];
+      
+      items.forEach(name=>{
+        const tpl = tByName.get(name) || {name, type:"einsatz", color: emp.color};
+        const box = document.createElement("div");
+        box.className="box";
+        box.style.background = tpl.color;
+        box.style.color = isDark(tpl.color) ? "#fff" : "#081018";
+        box.textContent = name;
+        
+        if(tpl.type==="urlaub") stats.urlaub++;
+        else if(tpl.type==="krank") stats.krank++;
+        else if(tpl.type==="frei") stats.frei++;
+        else stats.einsatz++;
+        
+        cell.appendChild(box);
+      });
+      
+      grid.appendChild(cell);
+    }
+  });
+  
+  container.appendChild(grid);
+  
+  $("stats").textContent = `Einsatz: ${stats.einsatz} • Urlaub: ${stats.urlaub} • Krank: ${stats.krank} • Frei: ${stats.frei}`;
+  
+  // Update buttons
+  $('prevWeek').disabled = currentWeekIndex === 0;
+  $('nextWeek').disabled = currentWeekIndex === 3;
+  
+  document.documentElement.requestFullscreen?.().catch(()=>{});
+}
+
+function esc(s){
+  return (s??"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;");
+}
+
+// Week Navigation
+$('prevWeek').onclick = () => {
+  if(currentWeekIndex > 0){
+    currentWeekIndex--;
+    renderWeek();
+  }
+};
+
+$('nextWeek').onclick = () => {
+  if(currentWeekIndex < 3){
+    currentWeekIndex++;
+    renderWeek();
+  }
+};
+
+// Keyboard Navigation
+document.addEventListener('keydown', (e) => {
+  if(e.key === 'ArrowLeft' && currentWeekIndex > 0){
+    currentWeekIndex--;
+    renderWeek();
+  } else if(e.key === 'ArrowRight' && currentWeekIndex < 3){
+    currentWeekIndex++;
+    renderWeek();
+  }
+});
+
+// Load data
+onValue(planRef,(snap)=>{ 
+  if(snap.exists()){
+    planData = snap.val();
+    currentWeekIndex = findCurrentWeek(planData.start);
+    renderWeek();
+  }
+});
+
+// Events
+onValue(eventsRef,(snap)=>{
+  if(!snap.exists()) return;
+  const obj = snap.val();
+  const lastKey = Object.keys(obj)[0];
+  const ev = obj[lastKey];
+  if(ev?.type==="krank"){
+    const b=$("banner");
+    b.textContent = `🚨 Krank gemeldet: ${ev.label} (${new Date(ev.at).toLocaleTimeString("de-DE")})`;
+    b.style.display="block";
+    setTimeout(()=>b.style.display="none", 8000);
+  }
+});
+</script>
+</body>
+</html>
