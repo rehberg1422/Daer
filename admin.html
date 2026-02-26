@@ -1,0 +1,652 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Daer – Dienstleister | Admin V3</title>
+<style>
+:root{
+  --bg:#0f1722; --card:#18253a; --card2:#111a28; --text:#eef4ff; --muted:#9fb0c9;
+  --line:#2a3a55; --btn:#1e2b40; --hot:#4cc9f0;
+}
+body.light{
+  --bg:#f4f6fb; --card:#ffffff; --card2:#eef2f8; --text:#101828; --muted:#667085;
+  --line:#d0d5dd; --btn:#f2f4f7; --hot:#0ea5e9;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--text)}
+.topbar{
+  position:sticky; top:0; z-index:50;
+  display:flex; flex-wrap:wrap; gap:10px; align-items:center; justify-content:space-between;
+  padding:12px 14px; background:rgba(10,14,24,.92); backdrop-filter: blur(10px);
+  border-bottom:1px solid rgba(255,255,255,.06);
+}
+body.light .topbar{background:rgba(255,255,255,.92); border-bottom:1px solid var(--line)}
+h1{margin:0;font-size:18px}
+.small{font-size:12px;color:var(--muted)}
+.row{display:flex; gap:8px; flex-wrap:wrap; align-items:center}
+button,input,select{
+  padding:10px 12px; border-radius:10px; border:1px solid var(--line);
+  background:var(--btn); color:var(--text); font-size:14px;
+}
+button{cursor:pointer}
+button.primary{border-color:transparent; background:linear-gradient(135deg,#2563eb,#7c3aed); color:white}
+button.danger{border-color:#7f1d1d;background:#991b1b;color:#fff}
+.container{display:grid; grid-template-columns: 360px 1fr; gap:14px; padding:14px}
+@media (max-width: 1050px){ .container{grid-template-columns:1fr} }
+.card{
+  background:var(--card); border:1px solid rgba(255,255,255,.06);
+  border-radius:16px; padding:12px;
+}
+body.light .card{border:1px solid var(--line)}
+.card h2{margin:0 0 10px 0; font-size:14px; letter-spacing:.3px; text-transform:uppercase; color:var(--muted)}
+.hr{height:1px;background:rgba(255,255,255,.08);margin:10px 0}
+body.light .hr{background:var(--line)}
+.emp{display:flex; gap:8px; align-items:center; margin-bottom:8px}
+.emp input[type="color"]{width:48px;height:40px;padding:0;border-radius:12px}
+.chips{display:flex; flex-wrap:wrap; gap:8px}
+.chip{
+  display:flex; align-items:center; gap:8px;
+  padding:10px 12px; border-radius:14px;
+  border:1px solid rgba(255,255,255,.10);
+  background:var(--card2);
+  cursor:grab; user-select:none;
+}
+body.light .chip{border:1px solid var(--line)}
+.swatch{width:14px;height:14px;border-radius:4px; display:inline-block; border:1px solid rgba(255,255,255,.25)}
+.gridwrap{display:flex; flex-direction:column; gap:14px}
+.week{
+  background:var(--card); border:1px solid rgba(255,255,255,.06);
+  border-radius:16px; padding:10px;
+}
+body.light .week{border:1px solid var(--line)}
+.weekTitle{display:flex; justify-content:space-between; align-items:center; margin-bottom:8px}
+.weekTitle b{font-size:14px}
+.grid{
+  display:grid; grid-template-columns: 180px repeat(6, 1fr);
+  border:1px solid var(--line); border-radius:14px; overflow:hidden;
+}
+.cell, .head{
+  min-height:56px; padding:8px; border:1px solid var(--line);
+  display:flex; align-items:center; justify-content:center; text-align:center;
+  font-size:12px;
+}
+.head{background:var(--card2); font-weight:700}
+.empname{justify-content:flex-start; gap:10px}
+.dot{width:10px;height:10px;border-radius:50%}
+.cell{
+  position:relative; flex-direction:column; gap:6px; cursor:pointer;
+}
+.cell.dropHot{outline:2px dashed var(--hot); outline-offset:-4px}
+.tag{
+  width:100%;
+  padding:6px 8px; border-radius:12px; font-weight:700;
+  border:1px solid rgba(255,255,255,.10);
+  display:flex; justify-content:space-between; align-items:center;
+}
+.tag .x{opacity:.8; font-weight:900; padding-left:10px}
+.toast{
+  position:fixed; left:12px; bottom:12px; z-index:999;
+  background:rgba(15,23,42,.92); color:#fff; border:1px solid rgba(255,255,255,.12);
+  border-radius:14px; padding:10px 12px; max-width:85vw;
+  transform:translateY(30px); opacity:0; transition:.18s ease;
+}
+.toast.show{transform:translateY(0); opacity:1}
+/* touch drag ghost */
+#ghost{
+  position:fixed; left:-9999px; top:-9999px; z-index:9999; pointer-events:none;
+  padding:10px 12px; border-radius:14px;
+  background:rgba(30,41,59,.95); border:1px solid rgba(255,255,255,.18);
+  box-shadow:0 20px 40px rgba(0,0,0,.45); color:#fff; font-weight:700;
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div>
+    <h1>Daer – Dienstleister | Admin V3</h1>
+    <div class="small" id="who">nicht eingeloggt</div>
+  </div>
+  <div class="row">
+    <button id="modeBtn">☀️/🌙</button>
+    <button id="notifBtn">🔔 Push aktivieren</button>
+    <button class="primary" id="aiBtn">🧠 KI planen</button>
+    <button id="loginBtn">🐙 GitHub Login</button>
+    <button id="logoutBtn" class="danger" style="display:none">Logout</button>
+  </div>
+</div>
+
+<div class="container">
+  <div class="card">
+    <h2>Plan Steuerung</h2>
+    <div class="row">
+      <label class="small">Start Montag
+        <input type="date" id="startDate">
+      </label>
+      <button id="copyBtn">W1 → W2–W4</button>
+      <button id="clearBtn" class="danger">Alles löschen</button>
+    </div>
+    <div class="hr"></div>
+    <div class="small">
+      **Monatswechsel-Auto:** Wenn der Plan älter als 28 Tage wird, wird er automatisch archiviert und ein neuer Zyklus gestartet.
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Vorlagen (Schichtkarten)</h2>
+    <div class="row">
+      <input id="tplName" placeholder="z.B. Einsatz Früh">
+      <select id="tplType">
+        <option value="einsatz">Einsatz</option>
+        <option value="urlaub">Urlaub</option>
+        <option value="krank">Krank</option>
+        <option value="frei">Frei</option>
+        <option value="sonst">Sonstiges</option>
+      </select>
+      <input type="color" id="tplColor" value="#4cc9f0" title="Farbe">
+      <button id="tplAdd">+</button>
+    </div>
+    <div class="chips" id="templates"></div>
+    <div class="small">Tipp: Am Handy „halten & ziehen". Tippen auf Eintrag = löschen.</div>
+  </div>
+
+  <div class="card">
+    <h2>Mitarbeiter</h2>
+    <div id="employees"></div>
+    <button id="empAdd">+ Mitarbeiter</button>
+  </div>
+
+  <div class="gridwrap" id="weeks"></div>
+</div>
+
+<div id="ghost"></div>
+<div class="toast" id="toast"></div>
+
+<script type="module">
+/* ========= Firebase ========= */
+const firebaseConfig = {
+  apiKey: "AIzaSyDgjZr2yrOrbl2dUoY26fl8EenOL0Hh-H4",
+  authDomain: "daer-b57f6.firebaseapp.com",
+  databaseURL: "https://daer-b57f6-default-rtdb.firebaseio.com",
+  projectId: "daer-b57f6",
+  storageBucket: "daer-b57f6.firebasestorage.app",
+  messagingSenderId: "992532370590",
+  appId: "1:992532370590:web:185d52a3dc6338b3ee978f"
+};
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, set, onValue, push, update } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+import { getAuth, GithubAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+const auth = getAuth(app);
+
+const planRef = ref(db, "dienstplan");
+const archiveRef = ref(db, "archive");
+const eventsRef = ref(db, "events");
+
+let user = null;
+let lastLoaded = null;
+
+let data = {
+  start: "",
+  employees: [{name:"Papa", color:"#4cc9f0"}],
+  templates: [
+    {name:"Einsatz", type:"einsatz", color:"#4cc9f0"},
+    {name:"Urlaub", type:"urlaub", color:"#f9c74f"},
+    {name:"Krank",  type:"krank",  color:"#f94144"},
+    {name:"Frei",   type:"frei",   color:"#43aa8b"},
+  ],
+  assignments: {} // key w-r-d => [templateName,...]
+};
+
+/* ========= UI helpers ========= */
+const $ = (id)=>document.getElementById(id);
+const toastEl = $("toast");
+function toast(msg){
+  toastEl.textContent = msg;
+  toastEl.classList.add("show");
+  setTimeout(()=>toastEl.classList.remove("show"), 1400);
+}
+
+function todayISO(){
+  const d=new Date(); const p=n=>String(n).padStart(2,"0");
+  return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`;
+}
+function addDays(iso, days){
+  const d=new Date(iso); d.setDate(d.getDate()+days);
+  return d.toISOString().slice(0,10);
+}
+function diffDays(aIso, bIso){
+  const a=new Date(aIso); const b=new Date(bIso);
+  return Math.floor((b-a)/(1000*60*60*24));
+}
+
+/* ========= Auth mit GitHub ========= */
+$("loginBtn").onclick = async ()=>{
+  try {
+    const provider = new GithubAuthProvider();
+    // Optional: Request additional scopes if needed
+    // provider.addScope('repo');
+    await signInWithPopup(auth, provider);
+    toast("Login erfolgreich ✅");
+  } catch (error) {
+    console.error("Login Fehler:", error);
+    toast("Login fehlgeschlagen ❌ " + error.message);
+  }
+};
+
+$("logoutBtn").onclick = async ()=>{
+  try {
+    await signOut(auth);
+    toast("Logout erfolgreich 👋");
+  } catch (error) {
+    console.error("Logout Fehler:", error);
+    toast("Logout fehlgeschlagen ❌");
+  }
+};
+
+onAuthStateChanged(auth, (u)=>{
+  user = u || null;
+  $("logoutBtn").style.display = user ? "inline-block" : "none";
+  $("loginBtn").style.display  = user ? "none" : "inline-block";
+  
+  if (user) {
+    // GitHub user data
+    const displayName = user.displayName || user.reloadUserInfo?.screenName || "GitHub User";
+    const email = user.email || user.providerData?.[0]?.email || "";
+    $("who").textContent = `eingeloggt: ${displayName}${email ? ' (' + email + ')' : ''}`;
+    load();
+  } else {
+    $("who").textContent = "nicht eingeloggt";
+  }
+});
+
+/* ========= Dark/Light ========= */
+const MODE_KEY="daer_mode_v3";
+function applyMode(m){ document.body.classList.toggle("light", m==="light"); }
+applyMode(localStorage.getItem(MODE_KEY) || "dark");
+$("modeBtn").onclick = ()=>{
+  const now = document.body.classList.contains("light") ? "dark" : "light";
+  localStorage.setItem(MODE_KEY, now);
+  applyMode(now);
+};
+
+/* ========= Save / Load ========= */
+function save(){
+  if(!user){ toast("Erst einloggen, wa."); return; }
+  set(planRef, data);
+}
+function load(){
+  onValue(planRef, (snap)=>{
+    if(snap.exists()){
+      data = snap.val();
+      lastLoaded = JSON.stringify(data);
+    }else{
+      // first init
+      if(!data.start) data.start = mondayOfThisWeek();
+      save();
+    }
+    autoRolloverIfNeeded();
+    render();
+  });
+}
+
+/* ========= Monatswechsel-Auto (28 Tage Zyklus) ========= */
+function mondayOfThisWeek(){
+  const d = new Date();
+  const day = (d.getDay()+6)%7; // Mo=0
+  d.setDate(d.getDate()-day);
+  return d.toISOString().slice(0,10);
+}
+async function autoRolloverIfNeeded(){
+  if(!data.start) return;
+  const age = diffDays(data.start, todayISO());
+  if(age < 28) return;
+
+  // archive current plan
+  const stamp = data.start;
+  const arcKey = stamp;
+  const arcObj = { archivedAt: new Date().toISOString(), plan: data };
+  await update(archiveRef, { [arcKey]: arcObj });
+
+  // reset for new cycle starting today (this week's monday)
+  const newStart = mondayOfThisWeek();
+  data.start = newStart;
+  data.assignments = {};
+  await set(planRef, data);
+
+  toast("Plan archiviert & neuer Zyklus gestartet ✅");
+}
+
+/* ========= Templates ========= */
+function renderTemplates(){
+  const box = $("templates");
+  box.innerHTML = "";
+  data.templates = data.templates || [];
+  data.templates.forEach((t, idx)=>{
+    const div = document.createElement("div");
+    div.className = "chip";
+    div.draggable = true;
+    div.dataset.idx = idx;
+    div.innerHTML = `<span class="swatch" style="background:${t.color}"></span>
+                     <b>${escapeHtml(t.name)}</b>
+                     <span class="small">${t.type}</span>`;
+    div.addEventListener("dragstart",(ev)=>{
+      ev.dataTransfer.setData("text/plain", String(idx));
+    });
+    setupPointerDrag(div, idx);
+    box.appendChild(div);
+  });
+}
+$("tplAdd").onclick = ()=>{
+  const name = $("tplName").value.trim();
+  const type = $("tplType").value;
+  const color= $("tplColor").value;
+  if(!name) return;
+  if((data.templates||[]).some(x=>x.name.toLowerCase()===name.toLowerCase())){
+    toast("Vorlage gibt's schon 🚫"); return;
+  }
+  data.templates.push({name,type,color});
+  $("tplName").value="";
+  save(); renderTemplates();
+};
+
+/* ========= Employees ========= */
+$("empAdd").onclick = ()=>{
+  data.employees.push({name:"Neu", color:"#48d597"});
+  save(); renderEmployees(); render();
+};
+function renderEmployees(){
+  const box = $("employees");
+  box.innerHTML = "";
+  (data.employees||[]).forEach((e,i)=>{
+    const row = document.createElement("div");
+    row.className = "emp";
+    row.innerHTML = `<input value="${escapeHtml(e.name)}" style="flex:1">
+                     <input type="color" value="${e.color}">
+                     <button class="danger" title="löschen">X</button>`;
+    const name = row.querySelectorAll("input")[0];
+    const col  = row.querySelectorAll("input")[1];
+    const del  = row.querySelector("button");
+    name.addEventListener("input", ()=>{ data.employees[i].name=name.value; save(); render(); });
+    col.addEventListener("input",  ()=>{ data.employees[i].color=col.value; save(); render(); });
+    del.addEventListener("click",  ()=>{ data.employees.splice(i,1); save(); renderEmployees(); render(); });
+    box.appendChild(row);
+  });
+}
+
+/* ========= Assignments (4 weeks) ========= */
+function key(w,r,d){ return `${w}-${r}-${d}`; }
+function cellHas(key, tplName){
+  const arr = data.assignments[key] || [];
+  return arr.includes(tplName);
+}
+function assignToCell(k, tpl){
+  data.assignments[k] = data.assignments[k] || [];
+  if(data.assignments[k].includes(tpl.name)){
+    toast("Dupe-Guard 🚫"); return;
+  }
+  data.assignments[k].push(tpl.name);
+
+  // event for krank
+  if(tpl.type === "krank"){
+    queueKrankEvent(k, tpl.name);
+    localNotify(`Krank eingetragen: ${tpl.name}`);
+  }
+
+  save();
+  render(); // refresh
+}
+function removeFromCell(k, tplName){
+  const arr = data.assignments[k] || [];
+  data.assignments[k] = arr.filter(x=>x!==tplName);
+  if(data.assignments[k].length===0) delete data.assignments[k];
+  save(); render();
+}
+$("copyBtn").onclick = ()=>{
+  for(let r=0;r<(data.employees||[]).length;r++){
+    for(let d=0;d<6;d++){
+      const src = data.assignments[key(0,r,d)] || [];
+      for(let w=1;w<4;w++){
+        data.assignments[key(w,r,d)] = JSON.parse(JSON.stringify(src));
+      }
+    }
+  }
+  save(); toast("Woche kopiert ✅"); render();
+};
+$("clearBtn").onclick = ()=>{
+  if(!confirm("Alles löschen wirklich?")) return;
+  data.assignments = {};
+  save(); render();
+};
+$("startDate").addEventListener("change",(e)=>{
+  data.start = e.target.value;
+  save(); render();
+});
+
+/* ========= Render weeks ========= */
+function render(){
+  if(!data.start) data.start = mondayOfThisWeek();
+  $("startDate").value = data.start;
+
+  renderEmployees();
+  renderTemplates();
+
+  const wrap = $("weeks");
+  wrap.innerHTML = "";
+
+  for(let w=0; w<4; w++){
+    const weekStart = addDays(data.start, w*7);
+    const week = document.createElement("div");
+    week.className = "week";
+    week.innerHTML = `<div class="weekTitle">
+        <b>Woche ${w+1}</b>
+        <span class="small">ab ${weekStart}</span>
+      </div>`;
+
+    const grid = document.createElement("div");
+    grid.className = "grid";
+
+    grid.appendChild(head("Mitarbeiter"));
+    ["Mo","Di","Mi","Do","Fr","Sa"].forEach(d=>grid.appendChild(head(d)));
+
+    (data.employees||[]).forEach((emp,r)=>{
+      const empCell = document.createElement("div");
+      empCell.className = "head empname";
+      empCell.innerHTML = `<span class="dot" style="background:${emp.color}"></span><span>${escapeHtml(emp.name)}</span>`;
+      grid.appendChild(empCell);
+
+      for(let d=0; d<6; d++){
+        const k = key(w,r,d);
+        const cell = document.createElement("div");
+        cell.className = "cell";
+        cell.dataset.key = k;
+
+        // desktop DnD
+        cell.addEventListener("dragover",(ev)=>{ ev.preventDefault(); cell.classList.add("dropHot"); });
+        cell.addEventListener("dragleave",()=>cell.classList.remove("dropHot"));
+        cell.addEventListener("drop",(ev)=>{
+          ev.preventDefault(); cell.classList.remove("dropHot");
+          const idx = Number(ev.dataTransfer.getData("text/plain"));
+          if(Number.isNaN(idx)) return;
+          const tpl = data.templates[idx];
+          assignToCell(k, tpl);
+        });
+
+        // render tags
+        (data.assignments[k]||[]).forEach(name=>{
+          const tpl = (data.templates||[]).find(t=>t.name===name) || {name, type:"sonst", color: emp.color};
+          const tag = document.createElement("div");
+          tag.className="tag";
+          tag.style.background = tpl.color + "33";
+          tag.style.borderLeft = "6px solid " + tpl.color;
+          tag.innerHTML = `<span>${escapeHtml(tpl.name)}</span><span class="x">×</span>`;
+          tag.addEventListener("click",(ev)=>{
+            ev.stopPropagation();
+            removeFromCell(k, tpl.name);
+          });
+          cell.appendChild(tag);
+        });
+
+        // tap empty cell -> quick pick
+        cell.addEventListener("click", ()=>{
+          openQuickPick(k);
+        });
+
+        grid.appendChild(cell);
+      }
+    });
+
+    week.appendChild(grid);
+    wrap.appendChild(week);
+  }
+}
+
+/* ========= Quick pick ========= */
+function openQuickPick(k){
+  // simple prompt list (fast). Could be modal but keep it snappy.
+  const names = (data.templates||[]).map(t=>t.name).join(", ");
+  const choice = prompt("Vorlage eintippen (genau):\n" + names);
+  if(!choice) return;
+  const tpl = (data.templates||[]).find(t=>t.name.toLowerCase()===choice.toLowerCase());
+  if(!tpl){ toast("nicht gefunden"); return; }
+  assignToCell(k, tpl);
+}
+
+/* ========= Local notification (when admin open) ========= */
+$("notifBtn").onclick = async ()=>{
+  if(!("Notification" in window)){ toast("Push nicht möglich"); return; }
+  const p = await Notification.requestPermission();
+  toast(p==="granted" ? "Push an ✅" : "Push aus ❌");
+};
+function localNotify(msg){
+  try{
+    if(Notification.permission==="granted"){
+      new Notification("Daer – Dienstplan", { body: msg });
+    }
+  }catch(e){}
+}
+
+/* ========= Krank event queue (for TV toast + server push) ========= */
+async function queueKrankEvent(cellKey, label){
+  // store event in DB so TV can show banner; server function can also send push.
+  const payload = {
+    type:"krank",
+    label,
+    cellKey,
+    at: new Date().toISOString(),
+    by: user?.email || user?.displayName || user?.uid || "unknown"
+  };
+  try{
+    await push(eventsRef, payload);
+  }catch(e){}
+}
+
+/* ========= KI Planung =========
+   "Ausrasten" = wir liefern:
+   - fair rotation
+   - blockiert Urlaub/Krank/Frei
+   - optional echte OpenAI Planung später (hook)
+*/
+$("aiBtn").onclick = ()=>{
+  if(!confirm("KI plant Woche 1 (optional Kopie später). Los?")) return;
+  const emps = data.employees||[];
+  if(emps.length===0) return;
+
+  // Clear week 1 "einsatz" only; keep Urlaub/Krank/Frei if already set
+  for(let r=0;r<emps.length;r++){
+    for(let d=0;d<6;d++){
+      const k = key(0,r,d);
+      const existing = (data.assignments[k]||[]);
+      const keep = existing.filter(name=>{
+        const t=(data.templates||[]).find(x=>x.name===name);
+        return t && (t.type==="urlaub"||t.type==="krank"||t.type==="frei");
+      });
+      if(keep.length) data.assignments[k]=keep;
+      else delete data.assignments[k];
+    }
+  }
+
+  // Assign one "Einsatz" per day to rotate through employees
+  const einsatzTpl = (data.templates||[]).find(t=>t.type==="einsatz") || (data.templates||[])[0];
+  for(let d=0; d<6; d++){
+    // find next employee without blocking status
+    for(let off=0; off<emps.length; off++){
+      const r = (d+off) % emps.length;
+      const k = key(0,r,d);
+      const existing = (data.assignments[k]||[]);
+      const blocked = existing.some(name=>{
+        const t=(data.templates||[]).find(x=>x.name===name);
+        return t && (t.type==="urlaub"||t.type==="krank"||t.type==="frei");
+      });
+      if(!blocked){
+        data.assignments[k] = data.assignments[k] || [];
+        if(!data.assignments[k].includes(einsatzTpl.name)) data.assignments[k].push(einsatzTpl.name);
+        break;
+      }
+    }
+  }
+
+  save(); toast("KI hat Woche 1 geplant ✅");
+};
+
+/* ========= Touch drag support ========= */
+const ghost = document.getElementById("ghost");
+let dragging = null;
+function setupPointerDrag(el, idx){
+  el.addEventListener("pointerdown",(ev)=>{
+    el.setPointerCapture(ev.pointerId);
+    dragging = { idx, pointerId: ev.pointerId };
+    showGhost(data.templates[idx].name, ev.clientX, ev.clientY);
+    ev.preventDefault();
+  });
+  el.addEventListener("pointermove",(ev)=>{
+    if(!dragging || dragging.pointerId !== ev.pointerId) return;
+    moveGhost(ev.clientX, ev.clientY);
+    const c = cellFromPoint(ev.clientX, ev.clientY);
+    document.querySelectorAll(".cell.dropHot").forEach(x=>x.classList.remove("dropHot"));
+    if(c) c.classList.add("dropHot");
+    ev.preventDefault();
+  });
+  el.addEventListener("pointerup",(ev)=>{
+    if(!dragging || dragging.pointerId !== ev.pointerId) return;
+    const c = cellFromPoint(ev.clientX, ev.clientY);
+    document.querySelectorAll(".cell.dropHot").forEach(x=>x.classList.remove("dropHot"));
+    hideGhost();
+    if(c){
+      const k = c.dataset.key;
+      const tpl = data.templates[dragging.idx];
+      assignToCell(k, tpl);
+    }
+    dragging = null;
+    ev.preventDefault();
+  });
+  el.addEventListener("pointercancel",()=>{ hideGhost(); dragging=null; });
+}
+function cellFromPoint(x,y){
+  const el=document.elementFromPoint(x,y);
+  return el?.closest?.(".cell") || null;
+}
+function showGhost(text,x,y){
+  ghost.textContent=text;
+  ghost.style.left=(x+12)+"px";
+  ghost.style.top =(y+12)+"px";
+}
+function moveGhost(x,y){
+  ghost.style.left=(x+12)+"px";
+  ghost.style.top =(y+12)+"px";
+}
+function hideGhost(){ ghost.style.left="-9999px"; ghost.style.top="-9999px"; }
+
+/* ========= misc ========= */
+function head(t){ const d=document.createElement("div"); d.className="head"; d.textContent=t; return d; }
+function escapeHtml(s){ return (s??"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;"); }
+
+// initial skeleton (before login loads)
+render();
+</script>
+</body>
+</html>
