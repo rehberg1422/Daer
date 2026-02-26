@@ -1,0 +1,308 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Daer – Dienstleister | Admin V3 DEBUG</title>
+<style>
+:root{
+  --bg:#0f1722; --card:#18253a; --card2:#111a28; --text:#eef4ff; --muted:#9fb0c9;
+  --line:#2a3a55; --btn:#1e2b40; --hot:#4cc9f0;
+}
+body.light{
+  --bg:#f4f6fb; --card:#ffffff; --card2:#eef2f8; --text:#101828; --muted:#667085;
+  --line:#d0d5dd; --btn:#f2f4f7; --hot:#0ea5e9;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--text)}
+.topbar{
+  position:sticky; top:0; z-index:50;
+  display:flex; flex-wrap:wrap; gap:10px; align-items:center; justify-content:space-between;
+  padding:12px 14px; background:rgba(10,14,24,.92); backdrop-filter: blur(10px);
+  border-bottom:1px solid rgba(255,255,255,.06);
+}
+body.light .topbar{background:rgba(255,255,255,.92); border-bottom:1px solid var(--line)}
+h1{margin:0;font-size:18px}
+.small{font-size:12px;color:var(--muted)}
+.row{display:flex; gap:8px; flex-wrap:wrap; align-items:center}
+button,input,select{
+  padding:10px 12px; border-radius:10px; border:1px solid var(--line);
+  background:var(--btn); color:var(--text); font-size:14px;
+}
+button{cursor:pointer}
+button.primary{border-color:transparent; background:linear-gradient(135deg,#2563eb,#7c3aed); color:white}
+button.danger{border-color:#7f1d1d;background:#991b1b;color:#fff}
+.container{display:grid; grid-template-columns: 360px 1fr; gap:14px; padding:14px}
+@media (max-width: 1050px){ .container{grid-template-columns:1fr} }
+.card{
+  background:var(--card); border:1px solid rgba(255,255,255,.06);
+  border-radius:16px; padding:12px;
+}
+body.light .card{border:1px solid var(--line)}
+.card h2{margin:0 0 10px 0; font-size:14px; letter-spacing:.3px; text-transform:uppercase; color:var(--muted)}
+.hr{height:1px;background:rgba(255,255,255,.08);margin:10px 0}
+body.light .hr{background:var(--line)}
+
+/* DEBUG CONSOLE */
+#debugConsole{
+  position:fixed;
+  bottom:0;
+  left:0;
+  right:0;
+  max-height:200px;
+  overflow-y:auto;
+  background:rgba(0,0,0,0.95);
+  color:#0f0;
+  font-family:monospace;
+  font-size:11px;
+  padding:10px;
+  border-top:2px solid #0f0;
+  z-index:9999;
+}
+.debug-line{
+  margin:2px 0;
+  padding:2px 4px;
+}
+.debug-error{color:#f00;}
+.debug-warn{color:#ff0;}
+.debug-info{color:#0ff;}
+.debug-success{color:#0f0;}
+
+.toast{
+  position:fixed; left:12px; bottom:220px; z-index:999;
+  background:rgba(15,23,42,.92); color:#fff; border:1px solid rgba(255,255,255,.12);
+  border-radius:14px; padding:10px 12px; max-width:85vw;
+  transform:translateY(30px); opacity:0; transition:.18s ease;
+}
+.toast.show{transform:translateY(0); opacity:1}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div>
+    <h1>Daer – Dienstleister | Admin V3 DEBUG</h1>
+    <div class="small" id="who">🔍 Warte auf Auth...</div>
+  </div>
+  <div class="row">
+    <button id="loginBtn">🐙 GitHub Login</button>
+    <button id="logoutBtn" class="danger" style="display:none">Logout</button>
+    <button id="clearDebug">Clear Log</button>
+  </div>
+</div>
+
+<div class="container">
+  <div class="card">
+    <h2>🔧 Debug Info</h2>
+    <div style="font-family:monospace; font-size:11px; line-height:1.6;">
+      <div><strong>URL:</strong> <span id="currentUrl"></span></div>
+      <div><strong>Firebase Config:</strong> <span id="fbConfig"></span></div>
+      <div><strong>Auth State:</strong> <span id="authState">Initialisiere...</span></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>📋 Anleitung</h2>
+    <div class="small">
+      <ol style="line-height:1.8;">
+        <li>Prüfe die Debug-Console unten</li>
+        <li>Klicke auf "GitHub Login"</li>
+        <li>Schaue nach Fehlermeldungen (rot)</li>
+        <li>Sende mir die Fehler aus der Console</li>
+      </ol>
+      <p><strong>Häufige Fehler:</strong></p>
+      <ul>
+        <li><code>auth/unauthorized-domain</code> → Domain in Firebase freigeben</li>
+        <li><code>auth/popup-blocked</code> → Popup-Blocker deaktivieren</li>
+        <li><code>auth/invalid-client-id</code> → Client ID falsch in Firebase</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<div id="debugConsole"></div>
+
+<script type="module">
+/* ========= DEBUG LOGGER ========= */
+const debugConsole = document.getElementById('debugConsole');
+function debugLog(msg, type = 'info') {
+  const line = document.createElement('div');
+  line.className = `debug-line debug-${type}`;
+  const timestamp = new Date().toLocaleTimeString('de-DE');
+  line.textContent = `[${timestamp}] ${msg}`;
+  debugConsole.appendChild(line);
+  debugConsole.scrollTop = debugConsole.scrollHeight;
+  console.log(`[DEBUG ${type.toUpperCase()}]`, msg);
+}
+
+document.getElementById('clearDebug').onclick = () => {
+  debugConsole.innerHTML = '';
+};
+
+// Override console methods
+const originalError = console.error;
+console.error = (...args) => {
+  debugLog(args.join(' '), 'error');
+  originalError.apply(console, args);
+};
+
+debugLog('🚀 App gestartet', 'success');
+debugLog('URL: ' + window.location.href, 'info');
+
+/* ========= Firebase ========= */
+const firebaseConfig = {
+  apiKey: "AIzaSyDgjZr2yrOrbl2dUoY26fl8EenOL0Hh-H4",
+  authDomain: "daer-b525e.firebaseapp.com",
+  databaseURL: "https://daer-b525e-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "daer-b525e",
+  storageBucket: "daer-b525e.firebasestorage.app",
+  messagingSenderId: "992532370590",
+  appId: "1:992532370590:web:185d52a3dc6338b3ee978f"
+};
+
+debugLog('Firebase Config geladen', 'success');
+document.getElementById('currentUrl').textContent = window.location.href;
+document.getElementById('fbConfig').textContent = firebaseConfig.projectId;
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+import { getAuth, GithubAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+debugLog('Firebase Module importiert', 'success');
+
+let app, db, auth;
+try {
+  app = initializeApp(firebaseConfig);
+  debugLog('✅ Firebase App initialisiert', 'success');
+  
+  db = getDatabase(app);
+  debugLog('✅ Database initialisiert', 'success');
+  
+  auth = getAuth(app);
+  debugLog('✅ Auth initialisiert', 'success');
+} catch (error) {
+  debugLog('❌ Firebase Init Fehler: ' + error.message, 'error');
+  debugLog('Error Code: ' + error.code, 'error');
+  debugLog('Full Error: ' + JSON.stringify(error), 'error');
+}
+
+const $ = (id)=>document.getElementById(id);
+const toastEl = $("toast");
+function toast(msg){
+  toastEl.textContent = msg;
+  toastEl.classList.add("show");
+  setTimeout(()=>toastEl.classList.remove("show"), 2000);
+}
+
+let user = null;
+
+/* ========= Auth mit GitHub ========= */
+$("loginBtn").onclick = async ()=>{
+  debugLog('🔑 Login-Button geklickt', 'info');
+  
+  try {
+    debugLog('Erstelle GitHub Provider...', 'info');
+    const provider = new GithubAuthProvider();
+    debugLog('✅ GitHub Provider erstellt', 'success');
+    
+    // Optional: zusätzliche Scopes
+    provider.addScope('user:email');
+    debugLog('Scope hinzugefügt: user:email', 'info');
+    
+    debugLog('Öffne Popup für GitHub Login...', 'info');
+    const result = await signInWithPopup(auth, provider);
+    
+    debugLog('✅ Login erfolgreich!', 'success');
+    debugLog('User: ' + (result.user.displayName || result.user.email || result.user.uid), 'success');
+    debugLog('Provider: ' + result.providerId, 'info');
+    
+    // GitHub Credential Info
+    const credential = GithubAuthProvider.credentialFromResult(result);
+    if (credential) {
+      debugLog('GitHub Token erhalten: ' + credential.accessToken.substring(0, 10) + '...', 'info');
+    }
+    
+    toast("Login erfolgreich ✅");
+    
+  } catch (error) {
+    debugLog('❌ LOGIN FEHLER', 'error');
+    debugLog('Error Code: ' + error.code, 'error');
+    debugLog('Error Message: ' + error.message, 'error');
+    
+    if (error.customData) {
+      debugLog('Custom Data: ' + JSON.stringify(error.customData), 'error');
+    }
+    
+    // Spezifische Fehler-Hinweise
+    if (error.code === 'auth/unauthorized-domain') {
+      debugLog('⚠️ LÖSUNG: Füge "' + window.location.hostname + '" zu Firebase Authorized Domains hinzu', 'warn');
+      debugLog('Firebase Console → Authentication → Settings → Authorized domains', 'warn');
+    } else if (error.code === 'auth/popup-blocked') {
+      debugLog('⚠️ LÖSUNG: Erlaube Popups für diese Seite', 'warn');
+    } else if (error.code === 'auth/popup-closed-by-user') {
+      debugLog('ℹ️ Popup wurde vom User geschlossen', 'info');
+    }
+    
+    toast("Login fehlgeschlagen ❌ " + error.code);
+  }
+};
+
+$("logoutBtn").onclick = async ()=>{
+  debugLog('👋 Logout-Button geklickt', 'info');
+  try {
+    await signOut(auth);
+    debugLog('✅ Logout erfolgreich', 'success');
+    toast("Logout erfolgreich 👋");
+  } catch (error) {
+    debugLog('❌ Logout Fehler: ' + error.message, 'error');
+    toast("Logout fehlgeschlagen ❌");
+  }
+};
+
+onAuthStateChanged(auth, (u)=>{
+  debugLog('🔄 Auth State Changed', 'info');
+  
+  user = u || null;
+  
+  if (user) {
+    debugLog('✅ User eingeloggt', 'success');
+    debugLog('UID: ' + user.uid, 'info');
+    debugLog('Email: ' + (user.email || 'keine'), 'info');
+    debugLog('DisplayName: ' + (user.displayName || 'keiner'), 'info');
+    debugLog('Provider: ' + (user.providerData[0]?.providerId || 'unbekannt'), 'info');
+    
+    $("logoutBtn").style.display = "inline-block";
+    $("loginBtn").style.display = "none";
+    
+    const displayName = user.displayName || user.reloadUserInfo?.screenName || "GitHub User";
+    const email = user.email || user.providerData?.[0]?.email || "";
+    $("who").textContent = `✅ eingeloggt: ${displayName}${email ? ' (' + email + ')' : ''}`;
+    $("authState").textContent = "Eingeloggt als " + displayName;
+    
+  } else {
+    debugLog('ℹ️ User nicht eingeloggt', 'info');
+    $("logoutBtn").style.display = "none";
+    $("loginBtn").style.display = "inline-block";
+    $("who").textContent = "❌ nicht eingeloggt";
+    $("authState").textContent = "Nicht eingeloggt";
+  }
+});
+
+debugLog('✅ Script vollständig geladen', 'success');
+debugLog('Warte auf User-Interaktion...', 'info');
+
+// Window error handler
+window.addEventListener('error', (event) => {
+  debugLog('❌ Window Error: ' + event.message, 'error');
+  debugLog('File: ' + event.filename + ':' + event.lineno, 'error');
+});
+
+// Unhandled promise rejections
+window.addEventListener('unhandledrejection', (event) => {
+  debugLog('❌ Unhandled Promise Rejection: ' + event.reason, 'error');
+});
+
+</script>
+</body>
+</html>

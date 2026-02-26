@@ -1,0 +1,264 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Daer – TEST & DEBUG</title>
+<style>
+body{margin:0;padding:20px;font-family:Arial;background:#1a1a1a;color:#fff}
+h1{color:#4cc9f0}
+.section{background:#2a2a2a;padding:20px;margin:15px 0;border-radius:10px}
+button{padding:12px 20px;margin:5px;background:#4cc9f0;border:none;border-radius:8px;cursor:pointer;font-size:14px}
+button:hover{background:#3ab8e0}
+#log{
+  background:#000;color:#0f0;padding:15px;
+  font-family:monospace;font-size:12px;
+  height:300px;overflow-y:auto;
+  border-radius:8px;margin-top:10px;
+}
+.log-error{color:#f00}
+.log-success{color:#0f0}
+.log-info{color:#0ff}
+input{padding:10px;margin:5px;border-radius:5px;border:1px solid #555;background:#333;color:#fff}
+</style>
+</head>
+<body>
+
+<h1>🔧 Daer Firebase TEST & DEBUG</h1>
+
+<div class="section">
+  <h2>Test 1: Firebase Verbindung</h2>
+  <button id="testConnection">Verbindung testen</button>
+  <div id="connectionStatus">Warte...</div>
+</div>
+
+<div class="section">
+  <h2>Test 2: Daten schreiben</h2>
+  <input id="testData" placeholder="Test-Text eingeben" value="Hallo Firebase!">
+  <button id="testWrite">Schreiben</button>
+</div>
+
+<div class="section">
+  <h2>Test 3: Daten lesen</h2>
+  <button id="testRead">Lesen</button>
+  <div id="readResult" style="margin-top:10px"></div>
+</div>
+
+<div class="section">
+  <h2>Test 4: Dienstplan schreiben</h2>
+  <button id="testPlan">Plan schreiben</button>
+</div>
+
+<div class="section">
+  <h2>Test 5: Dienstplan lesen</h2>
+  <button id="testPlanRead">Plan lesen</button>
+  <div id="planResult" style="margin-top:10px"></div>
+</div>
+
+<div class="section">
+  <h2>📋 Debug Log</h2>
+  <button onclick="document.getElementById('log').innerHTML=''">Clear Log</button>
+  <div id="log"></div>
+</div>
+
+<script type="module">
+const logEl = document.getElementById('log');
+
+function log(msg, type='info'){
+  const timestamp = new Date().toLocaleTimeString('de-DE');
+  const line = document.createElement('div');
+  line.className = 'log-' + type;
+  line.textContent = `[${timestamp}] ${msg}`;
+  logEl.appendChild(line);
+  logEl.scrollTop = logEl.scrollHeight;
+  console.log(`[${type.toUpperCase()}]`, msg);
+}
+
+log('🚀 App gestartet', 'success');
+
+// Firebase Config
+const firebaseConfig = {
+  apiKey: "AIzaSyDgjZr2yrOrbl2dUoY26fl8EenOL0Hh-H4",
+  authDomain: "daer-b525e.firebaseapp.com",
+  databaseURL: "https://daer-b525e-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "daer-b525e",
+  storageBucket: "daer-b525e.firebasestorage.app",
+  messagingSenderId: "992532370590",
+  appId: "1:992532370590:web:185d52a3dc6338b3ee978f"
+};
+
+log('Config geladen: ' + firebaseConfig.projectId, 'info');
+
+// Import Firebase
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, set, get, onValue, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+log('Firebase Modules importiert', 'success');
+
+let app, db;
+
+try {
+  app = initializeApp(firebaseConfig);
+  log('✅ App initialisiert', 'success');
+  
+  db = getDatabase(app);
+  log('✅ Database initialisiert', 'success');
+  log('Database URL: ' + firebaseConfig.databaseURL, 'info');
+} catch(error) {
+  log('❌ Init Fehler: ' + error.message, 'error');
+}
+
+// Test 1: Connection
+document.getElementById('testConnection').onclick = async () => {
+  log('🔍 Teste Verbindung...', 'info');
+  
+  try {
+    const connectedRef = ref(db, '.info/connected');
+    onValue(connectedRef, (snap) => {
+      if (snap.val() === true) {
+        log('✅ VERBUNDEN!', 'success');
+        document.getElementById('connectionStatus').innerHTML = '✅ <span style="color:#0f0">VERBUNDEN</span>';
+      } else {
+        log('❌ NICHT verbunden', 'error');
+        document.getElementById('connectionStatus').innerHTML = '❌ <span style="color:#f00">NICHT VERBUNDEN</span>';
+      }
+    });
+  } catch(error) {
+    log('❌ Verbindungs-Fehler: ' + error.message, 'error');
+  }
+};
+
+// Test 2: Write
+document.getElementById('testWrite').onclick = async () => {
+  const testData = document.getElementById('testData').value;
+  log('📝 Versuche zu schreiben: "' + testData + '"', 'info');
+  
+  try {
+    const testRef = ref(db, 'test/message');
+    await set(testRef, {
+      text: testData,
+      timestamp: new Date().toISOString()
+    });
+    log('✅ Erfolgreich geschrieben!', 'success');
+  } catch(error) {
+    log('❌ WRITE FEHLER: ' + error.code, 'error');
+    log('Error Message: ' + error.message, 'error');
+    
+    if(error.code === 'PERMISSION_DENIED') {
+      log('🔥 FIREBASE RULES Problem!', 'error');
+      log('LÖSUNG: Firebase Console → Realtime Database → Rules', 'info');
+      log('Setze: { "rules": { ".read": true, ".write": true } }', 'info');
+    }
+  }
+};
+
+// Test 3: Read
+document.getElementById('testRead').onclick = async () => {
+  log('📖 Versuche zu lesen...', 'info');
+  
+  try {
+    const testRef = ref(db, 'test/message');
+    const snapshot = await get(testRef);
+    
+    if (snapshot.exists()) {
+      const data = snapshot.val();
+      log('✅ Erfolgreich gelesen!', 'success');
+      log('Daten: ' + JSON.stringify(data), 'success');
+      document.getElementById('readResult').innerHTML = 
+        `<pre style="color:#0f0">${JSON.stringify(data, null, 2)}</pre>`;
+    } else {
+      log('⚠️ Keine Daten vorhanden', 'info');
+      document.getElementById('readResult').innerHTML = 
+        '<span style="color:#ff0">Keine Daten gefunden. Zuerst schreiben!</span>';
+    }
+  } catch(error) {
+    log('❌ READ FEHLER: ' + error.code, 'error');
+    log('Error Message: ' + error.message, 'error');
+    
+    if(error.code === 'PERMISSION_DENIED') {
+      log('🔥 FIREBASE RULES Problem!', 'error');
+      log('LÖSUNG: Firebase Console → Realtime Database → Rules', 'error');
+    }
+  }
+};
+
+// Test 4: Plan Write
+document.getElementById('testPlan').onclick = async () => {
+  log('📝 Schreibe Test-Dienstplan...', 'info');
+  
+  const testPlan = {
+    start: "2025-02-24",
+    employees: [
+      {name: "Max Mustermann", color: "#4cc9f0"},
+      {name: "Anna Test", color: "#f9c74f"}
+    ],
+    templates: [
+      {name: "Einsatz", type: "einsatz", color: "#4cc9f0"},
+      {name: "Urlaub", type: "urlaub", color: "#f9c74f"}
+    ],
+    assignments: {
+      "0-0-0": ["Einsatz"],
+      "0-1-1": ["Urlaub"]
+    }
+  };
+  
+  try {
+    const planRef = ref(db, 'dienstplan');
+    await set(planRef, testPlan);
+    log('✅ Dienstplan erfolgreich geschrieben!', 'success');
+    log('Öffne jetzt die index.html um zu sehen ob es angezeigt wird!', 'success');
+  } catch(error) {
+    log('❌ PLAN WRITE FEHLER: ' + error.code, 'error');
+    log('Error Message: ' + error.message, 'error');
+    
+    if(error.code === 'PERMISSION_DENIED') {
+      log('🔥🔥🔥 FIREBASE RULES BLOCKIEREN!', 'error');
+      log('Du MUSST die Rules ändern:', 'error');
+      log('1. Firebase Console öffnen', 'error');
+      log('2. Realtime Database → Rules', 'error');
+      log('3. Setze: { "rules": { ".read": true, ".write": true } }', 'error');
+      log('4. Klicke "Publish"', 'error');
+    }
+  }
+};
+
+// Test 5: Plan Read
+document.getElementById('testPlanRead').onclick = async () => {
+  log('📖 Lese Dienstplan...', 'info');
+  
+  try {
+    const planRef = ref(db, 'dienstplan');
+    const snapshot = await get(planRef);
+    
+    if (snapshot.exists()) {
+      const data = snapshot.val();
+      log('✅ Dienstplan gefunden!', 'success');
+      log('Anzahl Mitarbeiter: ' + (data.employees?.length || 0), 'info');
+      log('Start: ' + data.start, 'info');
+      document.getElementById('planResult').innerHTML = 
+        `<pre style="color:#0f0;max-height:200px;overflow:auto">${JSON.stringify(data, null, 2)}</pre>`;
+    } else {
+      log('⚠️ Kein Dienstplan vorhanden', 'info');
+      document.getElementById('planResult').innerHTML = 
+        '<span style="color:#ff0">Kein Plan gefunden. Zuerst "Plan schreiben" klicken!</span>';
+    }
+  } catch(error) {
+    log('❌ PLAN READ FEHLER: ' + error.code, 'error');
+    log('Error Message: ' + error.message, 'error');
+  }
+};
+
+// Auto-test connection on load
+setTimeout(() => {
+  document.getElementById('testConnection').click();
+}, 500);
+
+log('✅ Bereit zum Testen!', 'success');
+log('', 'info');
+log('WICHTIG: Wenn PERMISSION_DENIED Fehler kommen:', 'info');
+log('→ Firebase Console → Realtime Database → Rules', 'info');
+log('→ Setze auf: { "rules": { ".read": true, ".write": true } }', 'info');
+
+</script>
+</body>
+</html>

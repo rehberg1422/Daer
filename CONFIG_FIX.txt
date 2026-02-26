@@ -1,0 +1,40 @@
+KORRIGIERTE FIREBASE KONFIGURATION
+===================================
+
+PROBLEM: Falsche Database URL und Projekt-ID
+--------------------------------------------
+
+ALTE (FALSCHE) CONFIG:
+{
+  apiKey: "AIzaSyDgjZr2yrOrbl2dUoY26fl8EenOL0Hh-H4",
+  authDomain: "daer-b57f6.firebaseapp.com",
+  databaseURL: "https://daer-b57f6-default-rtdb.firebaseio.com",
+  projectId: "daer-b57f6",
+  ...
+}
+
+NEUE (KORREKTE) CONFIG:
+{
+  apiKey: "AIzaSyDgjZr2yrOrbl2dUoY26fl8EenOL0Hh-H4",
+  authDomain: "daer-b525e.firebaseapp.com",
+  databaseURL: "https://daer-b525e-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "daer-b525e",
+  storageBucket: "daer-b525e.firebasestorage.app",
+  messagingSenderId: "992532370590",
+  appId: "1:992532370590:web:185d52a3dc6338b3ee978f"
+}
+
+WO FINDE ICH DIE KORREKTE CONFIG?
+----------------------------------
+1. Firebase Console: https://console.firebase.google.com
+2. Projekt: daer-b525e
+3. Oben rechts: Zahnrad (⚙️) → Project Settings
+4. Runter scrollen zu "Your apps"
+5. Wähle deine Web App
+6. Dort findest du die komplette firebaseConfig
+
+DIESE CONFIG MUSS IN ALLEN DATEIEN ERSETZT WERDEN:
+- index.html
+- admin.html
+- admin_noauth.html
+- test_firebase.html
