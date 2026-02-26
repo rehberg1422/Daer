@@ -1,0 +1,913 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Daer Dienstplan Admin</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: #f0f4f8;
+  color: #1a202c;
+  padding: 20px;
+}
+
+.top-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+@media (max-width: 1200px) {
+  .top-cards { grid-template-columns: 1fr; }
+}
+
+.card {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 20px;
+  color: #00acc1;
+  font-weight: 600;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.card-header .icon {
+  font-size: 18px;
+}
+
+input, select {
+  padding: 10px 12px;
+  border: 1px solid #cbd5e0;
+  border-radius: 6px;
+  font-size: 14px;
+  background: white;
+  color: #1a202c;
+}
+
+input:focus, select:focus {
+  outline: none;
+  border-color: #00acc1;
+}
+
+button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+button:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.btn-red {
+  background: #ef4444;
+  color: white;
+}
+
+.btn-cyan {
+  background: #00acc1;
+  color: white;
+}
+
+.btn-gray {
+  background: #e2e8f0;
+  color: #1a202c;
+}
+
+.row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.emp-item, .tpl-edit {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  padding: 10px;
+  background: #f7fafc;
+  border-radius: 6px;
+  margin-bottom: 10px;
+}
+
+.emp-item input[type="text"],
+.tpl-edit input[type="text"] {
+  flex: 1;
+}
+
+.emp-item input[type="color"],
+.tpl-edit input[type="color"] {
+  width: 45px;
+  height: 40px;
+  border: none;
+  cursor: pointer;
+  border-radius: 6px;
+}
+
+.color-btn {
+  width: 45px;
+  height: 40px;
+  border-radius: 6px;
+  border: 2px solid #e2e8f0;
+  cursor: pointer;
+}
+
+.tpl-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.tpl-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-weight: 500;
+  font-size: 14px;
+  cursor: grab;
+  border: 2px solid transparent;
+  transition: all 0.2s;
+}
+
+.tpl-chip:hover {
+  transform: scale(1.05);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.tpl-chip:active {
+  cursor: grabbing;
+}
+
+.tpl-chip.editing {
+  border-color: #00acc1;
+  box-shadow: 0 0 0 3px rgba(0,172,193,0.1);
+}
+
+.color-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.plan-header {
+  background: white;
+  border: 2px solid #00acc1;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.plan-title {
+  color: #00acc1;
+  font-size: 16px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.plan-subtitle {
+  color: #718096;
+  font-size: 13px;
+}
+
+.week-container {
+  background: white;
+  border: 2px solid #00acc1;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.week-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 15px;
+  border-bottom: 2px solid #00acc1;
+  margin-bottom: 20px;
+}
+
+.week-title h3 {
+  color: #00acc1;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.week-title .date {
+  color: #718096;
+  font-size: 14px;
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: 150px repeat(6, 1fr);
+  gap: 1px;
+  background: #cbd5e0;
+  border: 1px solid #cbd5e0;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.grid-cell {
+  background: white;
+  padding: 12px;
+  min-height: 100px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.grid-header {
+  background: #e6f7f9;
+  padding: 12px;
+  font-weight: 600;
+  text-align: center;
+  color: #00acc1;
+  font-size: 14px;
+}
+
+.grid-header.emp-header {
+  text-align: left;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.grid-cell.droppable {
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.grid-cell.droppable:hover {
+  background: #f7fafc;
+}
+
+.grid-cell.drag-over {
+  background: #bee3f8 !important;
+  border: 2px dashed #00acc1;
+}
+
+.assignment {
+  padding: 8px 10px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #1a202c;
+}
+
+.assignment .remove {
+  cursor: pointer;
+  font-weight: bold;
+  opacity: 0.6;
+  margin-left: 8px;
+}
+
+.assignment .remove:hover {
+  opacity: 1;
+}
+
+.toast {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: #00acc1;
+  color: white;
+  padding: 16px 24px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  font-weight: 500;
+  display: none;
+  animation: slideIn 0.3s ease;
+}
+
+.toast.show { display: block; }
+
+@keyframes slideIn {
+  from { transform: translateX(400px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+.edit-mode {
+  background: #fff3cd !important;
+  border: 2px solid #ffc107 !important;
+}
+
+/* Collapsible sections */
+.collapsible-header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  cursor:pointer;
+  user-select:none;
+}
+.caret{
+  font-weight:900;
+  opacity:.7;
+  transition: transform .18s ease, opacity .18s ease;
+}
+.collapsible-header:hover .caret{opacity:1}
+.collapsible-content{
+  overflow:hidden;
+  transition:max-height .22s ease;
+}
+.collapsed{
+  max-height:0 !important;
+}
+.caret.down{ transform: rotate(0deg); }
+.caret.right{ transform: rotate(-90deg); }
+
+</style>
+</head>
+<body>
+
+<div class="top-cards">
+  
+  <!-- PLAN STEUERUNG -->
+  <div class="card">
+    <div class="card-header">
+      <span class="icon">📅</span>
+      PLAN STEUERUNG
+    </div>
+    <div class="row">
+      <input type="date" id="startDate" style="flex:1">
+    </div>
+    <div class="row">
+      <button class="btn-gray" id="copyWeek">W1→W2–W4</button>
+      <button class="btn-red" id="clearAll">Löschen</button>
+    </div>
+  </div>
+
+  <!-- VORLAGEN -->
+  <div class="card">
+    <div class="card-header">
+      <span class="icon">🎨</span>
+      VORLAGEN
+    </div>
+    <div class="row">
+      <input type="text" id="tplName" placeholder="Name..." style="flex:1">
+      <select id="tplType">
+        <option value="einsatz">Einsatz</option>
+        <option value="urlaub">Urlaub</option>
+        <option value="krank">Krank</option>
+        <option value="frei">Frei</option>
+      </select>
+      <button class="btn-gray" id="minusBtn">−</button>
+      <button class="btn-gray" id="plusBtn">+</button>
+    </div>
+    <div class="tpl-chips" id="tplList"></div>
+  </div>
+
+  <!-- MITARBEITER -->
+  <div class="card" id="empCard">
+    <div class="card-header collapsible-header" id="empToggle" role="button" aria-expanded="true" tabindex="0">
+      <div style="display:flex;align-items:center;gap:10px">
+        <span class="icon">👥</span>
+        <span>MITARBEITER</span>
+      </div>
+      <span class="caret down" id="empCaret">▾</span>
+    </div>
+    <div class="collapsible-content" id="empContent">
+      <div id="empList"></div>
+      <button class="btn-gray" id="addEmp" style="width:100%;margin-top:10px">+ Mitarbeiter</button>
+    </div>
+  </div>
+
+<div id="empList"></div>
+    <button class="btn-gray" id="addEmp" style="width:100%;margin-top:10px">+ Mitarbeiter</button>
+  </div>
+
+</div>
+
+<!-- DIENSTPLAN -->
+<div class="plan-header">
+  <div class="plan-title">
+    <span>📋</span>
+    DIENSTPLAN - 4 WOCHEN
+  </div>
+  <div class="plan-subtitle">Klicke auf Zellen oder ziehe Vorlagen per Drag & Drop</div>
+</div>
+
+<div id="weeksContainer"></div>
+
+<div class="toast" id="toast"></div>
+
+<script type="module">
+const firebaseConfig = {
+  apiKey: "AIzaSyDgjZr2yrOrbl2dUoY26fl8EenOL0Hh-H4",
+  authDomain: "daer-b525e.firebaseapp.com",
+  databaseURL: "https://daer-b525e-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "daer-b525e",
+  storageBucket: "daer-b525e.firebasestorage.app",
+  messagingSenderId: "992532370590",
+  appId: "1:992532370590:web:185d52a3dc6338b3ee978f"
+};
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+const planRef = ref(db, "dienstplan");
+
+let data = {
+  start: "",
+  employees: [],
+  templates: [
+    { name: "Einsatz", type: "einsatz", color: "#00bcd4" },
+    { name: "Urlaub", type: "urlaub", color: "#ffc107" },
+    { name: "Krank", type: "krank", color: "#ef4444" },
+    { name: "Frei", type: "frei", color: "#10b981" }
+  ],
+  assignments: {}
+};
+
+let editingTemplate = null;
+
+const $ = id => document.getElementById(id);
+const toast = msg => {
+  const t = $('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2000);
+};
+
+const getMonday = () => {
+  const d = new Date();
+  const day = d.getDay();
+  const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+  d.setDate(diff);
+  return d.toISOString().split('T')[0];
+};
+
+const addDays = (dateStr, days) => {
+  const d = new Date(dateStr);
+  d.setDate(d.getDate() + days);
+  return d.toISOString().split('T')[0];
+};
+
+const cellKey = (week, emp, day) => `${week}-${emp}-${day}`;
+
+const save = () => {
+  set(planRef, data);
+};
+
+const load = () => {
+  onValue(planRef, snapshot => {
+    if (snapshot.exists()) {
+      data = snapshot.val();
+    } else {
+      data.start = data.start || getMonday();
+      save();
+    }
+    render();
+  });
+};
+
+// Templates
+const renderTemplates = () => {
+  const list = $('tplList');
+  list.innerHTML = '';
+  
+  data.templates.forEach((tpl, idx) => {
+    const chip = document.createElement('div');
+    chip.className = 'tpl-chip';
+    chip.draggable = true;
+    chip.style.background = tpl.color + '40';
+    chip.style.borderLeft = `4px solid ${tpl.color}`;
+    
+    if (editingTemplate === idx) {
+      chip.className = 'tpl-chip editing';
+    }
+    
+    chip.innerHTML = `
+      <span class="color-dot" style="background:${tpl.color}"></span>
+      <span>${tpl.name}</span>
+    `;
+    
+    chip.ondragstart = e => {
+      e.dataTransfer.setData('text/plain', idx);
+    };
+    
+    chip.onclick = () => {
+      if (editingTemplate === idx) {
+        editingTemplate = null;
+        $('tplName').value = '';
+        $('tplType').value = 'einsatz';
+      } else {
+        editingTemplate = idx;
+        $('tplName').value = tpl.name;
+        $('tplType').value = tpl.type;
+      }
+      renderTemplates();
+    };
+    
+    list.appendChild(chip);
+  });
+};
+
+$('plusBtn').onclick = () => {
+  const name = $('tplName').value.trim();
+  if (!name) {
+    toast('Bitte Namen eingeben!');
+    return;
+  }
+  
+  if (editingTemplate !== null) {
+    // Bearbeiten
+    data.templates[editingTemplate].name = name;
+    data.templates[editingTemplate].type = $('tplType').value;
+    editingTemplate = null;
+    $('tplName').value = '';
+    toast('Vorlage aktualisiert!');
+  } else {
+    // Neu erstellen
+    if (data.templates.some(t => t.name === name)) {
+      toast('Name existiert bereits!');
+      return;
+    }
+    const colors = ['#00bcd4', '#ffc107', '#ef4444', '#10b981', '#9c27b0', '#ff9800'];
+    const color = colors[data.templates.length % colors.length];
+    data.templates.push({ name, type: $('tplType').value, color });
+    $('tplName').value = '';
+    toast('Vorlage erstellt!');
+  }
+  
+  save();
+  renderTemplates();
+};
+
+$('minusBtn').onclick = () => {
+  if (editingTemplate === null) {
+    toast('Erst Vorlage auswählen!');
+    return;
+  }
+  
+  if (!confirm(`Vorlage "${data.templates[editingTemplate].name}" löschen?`)) return;
+  
+  const tplName = data.templates[editingTemplate].name;
+  
+  // Entferne aus Assignments
+  Object.keys(data.assignments).forEach(key => {
+    data.assignments[key] = data.assignments[key].filter(n => n !== tplName);
+    if (data.assignments[key].length === 0) delete data.assignments[key];
+  });
+  
+  data.templates.splice(editingTemplate, 1);
+  editingTemplate = null;
+  $('tplName').value = '';
+  
+  save();
+  toast('Vorlage gelöscht!');
+  renderTemplates();
+  renderWeeks();
+};
+
+// Farbe ändern per Doppelklick
+document.addEventListener('dblclick', e => {
+  const chip = e.target.closest('.tpl-chip');
+  if (!chip) return;
+  
+  const idx = Array.from(chip.parentElement.children).indexOf(chip);
+  const input = document.createElement('input');
+  input.type = 'color';
+  input.value = data.templates[idx].color;
+  input.onchange = () => {
+    data.templates[idx].color = input.value;
+    save();
+    renderTemplates();
+    renderWeeks();
+  };
+  input.click();
+});
+
+// Employees
+const renderEmployees = () => {
+  const list = $('empList');
+  list.innerHTML = '';
+  
+  data.employees.forEach((emp, idx) => {
+    const div = document.createElement('div');
+    div.className = 'emp-item';
+    div.innerHTML = `
+      <input type="text" value="${emp.name}" data-idx="${idx}" style="flex:1">
+      <div class="color-btn" style="background:${emp.color}" data-idx="${idx}"></div>
+      <button class="btn-red" data-idx="${idx}">×</button>
+    `;
+    list.appendChild(div);
+  });
+  
+  list.querySelectorAll('input').forEach(inp => {
+    inp.oninput = () => {
+      data.employees[inp.dataset.idx].name = inp.value;
+      save();
+    };
+  });
+  
+  list.querySelectorAll('.color-btn').forEach(btn => {
+    btn.onclick = () => {
+      const input = document.createElement('input');
+      input.type = 'color';
+      input.value = data.employees[btn.dataset.idx].color;
+      input.onchange = () => {
+        data.employees[btn.dataset.idx].color = input.value;
+        save();
+        renderEmployees();
+        renderWeeks();
+      };
+      input.click();
+    };
+  });
+  
+  list.querySelectorAll('button').forEach(btn => {
+    btn.onclick = () => {
+      if (!confirm('Mitarbeiter löschen?')) return;
+      data.employees.splice(btn.dataset.idx, 1);
+      save();
+      renderEmployees();
+      renderWeeks();
+    };
+  });
+};
+
+$('addEmp').onclick = () => {
+  data.employees.push({ name: 'Neuer Mitarbeiter', color: '#00bcd4' });
+  save();
+  renderEmployees();
+  renderWeeks();
+};
+
+// Weeks
+
+const renderWeeks = () => {
+  const container = $('weeksContainer');
+  container.innerHTML = '';
+
+  if (data.employees.length === 0) {
+    container.innerHTML = '<div style="text-align:center;padding:60px;color:#718096;font-size:16px">Füge zuerst Mitarbeiter hinzu →</div>';
+    return;
+  }
+
+  const days = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
+
+  for (let week = 0; week < 4; week++) {
+    const weekDiv = document.createElement('div');
+    weekDiv.className = 'week-container';
+
+    const weekStart = addDays(data.start, week * 7);
+
+    // Collapsible header
+    const header = document.createElement('div');
+    header.className = 'week-title collapsible-header';
+    header.setAttribute('role','button');
+    header.setAttribute('tabindex','0');
+    header.dataset.week = String(week);
+
+    // Restore state (default: open)
+    const key = `admin-week-${week}-open`;
+    const isOpen = (localStorage.getItem(key) ?? '1') === '1';
+
+    header.innerHTML = `
+      <div style="display:flex;align-items:baseline;gap:14px;flex-wrap:wrap">
+        <h3 style="margin:0">Woche ${week + 1}</h3>
+        <span class="date">ab ${weekStart}</span>
+      </div>
+      <span class="caret ${isOpen ? 'down' : 'right'}">▾</span>
+    `;
+
+    const content = document.createElement('div');
+    content.className = 'collapsible-content' + (isOpen ? '' : ' collapsed');
+    content.dataset.week = String(week);
+
+    const toggle = () => {
+      const openNow = content.classList.contains('collapsed');
+      if (openNow) {
+        content.classList.remove('collapsed');
+        localStorage.setItem(key,'1');
+        header.querySelector('.caret')?.classList.remove('right');
+        header.querySelector('.caret')?.classList.add('down');
+      } else {
+        // compute max height for animation start then collapse
+        content.classList.add('collapsed');
+        localStorage.setItem(key,'0');
+        header.querySelector('.caret')?.classList.remove('down');
+        header.querySelector('.caret')?.classList.add('right');
+      }
+    };
+
+    header.addEventListener('click', toggle);
+    header.addEventListener('keydown', (e)=>{ if(e.key==='Enter' || e.key===' '){ e.preventDefault(); toggle(); } });
+
+    // Build grid (same as before)
+    const grid = document.createElement('div');
+    grid.className = 'calendar-grid';
+
+    const headerCell = document.createElement('div');
+    headerCell.className = 'grid-header emp-header';
+    headerCell.textContent = 'Mitarbeiter';
+    grid.appendChild(headerCell);
+
+    days.forEach(day => {
+      const dayCell = document.createElement('div');
+      dayCell.className = 'grid-header';
+      dayCell.textContent = day;
+      grid.appendChild(dayCell);
+    });
+
+    data.employees.forEach((emp, empIdx) => {
+      const empCell = document.createElement('div');
+      empCell.className = 'grid-header emp-header';
+      empCell.innerHTML = `<span class="color-dot" style="background:${emp.color}"></span>${emp.name}`;
+      grid.appendChild(empCell);
+
+      for (let day = 0; day < 6; day++) {
+        const key = cellKey(week, empIdx, day);
+        const cell = document.createElement('div');
+        cell.className = 'grid-cell droppable';
+        cell.dataset.key = key;
+
+        cell.ondragover = e => {
+          e.preventDefault();
+          cell.classList.add('drag-over');
+        };
+
+        cell.ondragleave = () => {
+          cell.classList.remove('drag-over');
+        };
+
+        cell.ondrop = e => {
+          e.preventDefault();
+          cell.classList.remove('drag-over');
+          const tplIdx = e.dataTransfer.getData('text/plain');
+          const tpl = data.templates[tplIdx];
+          if (!data.assignments[key]) data.assignments[key] = [];
+          if (!data.assignments[key].includes(tpl.name)) {
+            data.assignments[key].push(tpl.name);
+            save();
+            renderWeeks();
+          }
+        };
+
+        cell.onclick = () => {
+          const choice = prompt('Vorlage:\n' + data.templates.map(t => t.name).join(', '));
+          if (!choice) return;
+          const tpl = data.templates.find(t => t.name.toLowerCase() === choice.toLowerCase());
+          if (tpl) {
+            if (!data.assignments[key]) data.assignments[key] = [];
+            if (!data.assignments[key].includes(tpl.name)) {
+              data.assignments[key].push(tpl.name);
+              save();
+              renderWeeks();
+            }
+          }
+        };
+
+        if (data.assignments[key]) {
+          data.assignments[key].forEach(tplName => {
+            const tpl = data.templates.find(t => t.name === tplName);
+            if (tpl) {
+              const assign = document.createElement('div');
+              assign.className = 'assignment';
+              assign.style.background = tpl.color + '40';
+              assign.style.borderLeft = `4px solid ${tpl.color}`;
+              assign.innerHTML = `<span>${tpl.name}</span><span class="remove">×</span>`;
+              assign.onclick = e => {
+                e.stopPropagation();
+                if (e.target.classList.contains('remove')) {
+                  data.assignments[key] = data.assignments[key].filter(n => n !== tplName);
+                  if (data.assignments[key].length === 0) delete data.assignments[key];
+                  save();
+                  renderWeeks();
+                }
+              };
+              cell.appendChild(assign);
+            }
+          });
+        }
+
+        grid.appendChild(cell);
+      }
+    });
+
+    content.appendChild(grid);
+    weekDiv.appendChild(header);
+    weekDiv.appendChild(content);
+    container.appendChild(weekDiv);
+  }
+};
+
+
+$('startDate').onchange = e => {
+  data.start = e.target.value;
+  save();
+  renderWeeks();
+};
+
+$('copyWeek').onclick = () => {
+  if (data.employees.length === 0) {
+    toast('Erst Mitarbeiter hinzufügen!');
+    return;
+  }
+  for (let empIdx = 0; empIdx < data.employees.length; empIdx++) {
+    for (let day = 0; day < 6; day++) {
+      const srcKey = cellKey(0, empIdx, day);
+      const src = data.assignments[srcKey] || [];
+      for (let week = 1; week < 4; week++) {
+        data.assignments[cellKey(week, empIdx, day)] = [...src];
+      }
+    }
+  }
+  save();
+  toast('Woche 1 kopiert!');
+  renderWeeks();
+};
+
+$('clearAll').onclick = () => {
+  if (!confirm('Alle Einträge löschen?')) return;
+  data.assignments = {};
+  save();
+  toast('Gelöscht!');
+  renderWeeks();
+};
+
+const render = () => {
+  if (!data.start) data.start = getMonday();
+  $('startDate').value = data.start;
+  renderTemplates();
+  renderEmployees();
+  renderWeeks();
+};
+
+
+// Collapsible Mitarbeiter-Panel (merkt sich Zustand)
+(() => {
+  const header = document.getElementById('empToggle');
+  const content = document.getElementById('empContent');
+  const caret = document.getElementById('empCaret');
+  if(!header || !content || !caret) return;
+
+  const key = 'admin-emp-open';
+  const isOpen = (localStorage.getItem(key) ?? '1') === '1';
+  if(!isOpen){
+    content.classList.add('collapsed');
+    caret.classList.remove('down');
+    caret.classList.add('right');
+  } else {
+    caret.classList.add('down');
+  }
+
+  const toggle = () => {
+    const willOpen = content.classList.contains('collapsed');
+    if(willOpen){
+      content.classList.remove('collapsed');
+      localStorage.setItem(key,'1');
+      caret.classList.remove('right');
+      caret.classList.add('down');
+    } else {
+      content.classList.add('collapsed');
+      localStorage.setItem(key,'0');
+      caret.classList.remove('down');
+      caret.classList.add('right');
+    }
+  };
+
+  header.addEventListener('click', toggle);
+  header.addEventListener('keydown', (e)=>{ if(e.key==='Enter' || e.key===' '){ e.preventDefault(); toggle(); } });
+})();
+
+
+load();
+</script>
+
+</body>
+</html>
