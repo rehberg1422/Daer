@@ -1,0 +1,1496 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Daer Admin Pro</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --primary: #00acc1;
+  --secondary: #8b5cf6;
+  --bg: #f5f7fa;
+  --card: #ffffff;
+  --text: #1a202c;
+  --text-light: #718096;
+  --border: #e2e8f0;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+}
+
+body.dark {
+  --primary: #4cc9f0;
+  --secondary: #a78bfa;
+  --bg: #0f1419;
+  --card: #1a1f2e;
+  --text: #e2e8f0;
+  --text-light: #94a3b8;
+  --border: #2d3748;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  transition: background 0.3s, color 0.3s;
+}
+
+.header {
+  background: var(--card);
+  padding: 20px 30px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.header-title h1 {
+  font-size: 28px;
+  font-weight: 900;
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 5px;
+}
+
+.header-subtitle {
+  font-size: 14px;
+  color: var(--text-light);
+  font-weight: 600;
+}
+
+.header-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.btn-icon {
+  background: var(--bg);
+  color: var(--text);
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-icon:active {
+  transform: scale(0.95);
+}
+
+.tabs {
+  display: flex;
+  gap: 8px;
+  border-bottom: 2px solid var(--border);
+  overflow-x: auto;
+}
+
+.tab {
+  padding: 14px 24px;
+  background: transparent;
+  border: none;
+  color: var(--text-light);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.2s;
+  border-bottom: 3px solid transparent;
+}
+
+.tab.active {
+  color: var(--primary);
+  border-bottom-color: var(--primary);
+}
+
+.container {
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 30px;
+}
+
+.tab-content {
+  display: none;
+}
+
+.tab-content.active {
+  display: block;
+  animation: fadeIn 0.3s;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.layout-grid {
+  display: grid;
+  grid-template-columns: 350px 1fr;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+@media (max-width: 1200px) {
+  .layout-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.card {
+  background: var(--card);
+  border-radius: 20px;
+  padding: 24px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  margin-bottom: 24px;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.card-title {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--text);
+}
+
+.form-group {
+  margin-bottom: 16px;
+}
+
+.form-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-light);
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.form-input,
+.form-select {
+  width: 100%;
+  padding: 12px 16px;
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.form-input:focus,
+.form-select:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+
+.form-color {
+  width: 60px;
+  height: 44px;
+  padding: 4px;
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  cursor: pointer;
+}
+
+.btn {
+  padding: 12px 20px;
+  border-radius: 12px;
+  border: none;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn:active {
+  transform: scale(0.98);
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  color: white;
+}
+
+.btn-secondary {
+  background: var(--bg);
+  color: var(--text);
+  border: 2px solid var(--border);
+}
+
+.btn-danger {
+  background: var(--danger);
+  color: white;
+}
+
+.employee-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: var(--bg);
+  border-radius: 12px;
+  margin-bottom: 12px;
+  transition: all 0.2s;
+}
+
+.employee-item:hover {
+  transform: translateX(4px);
+}
+
+.employee-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  font-weight: 900;
+  color: white;
+}
+
+.employee-name {
+  flex: 1;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  border-radius: 30px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: grab;
+  user-select: none;
+  transition: all 0.2s;
+  border: 2px solid transparent;
+}
+
+.chip:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.chip:active {
+  cursor: grabbing;
+}
+
+.chip-remove {
+  background: transparent;
+  border: none;
+  color: currentColor;
+  font-size: 18px;
+  font-weight: 900;
+  cursor: pointer;
+  opacity: 0.7;
+  padding: 0;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.chip-remove:hover {
+  opacity: 1;
+}
+
+.calendar-week {
+  background: var(--card);
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+.week-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.week-title {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--text);
+}
+
+.week-date {
+  font-size: 13px;
+  color: var(--text-light);
+  font-weight: 600;
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: 160px repeat(6, 1fr);
+  gap: 1px;
+  background: var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.grid-cell {
+  background: var(--bg);
+  min-height: 80px;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  position: relative;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.grid-cell:hover {
+  background: var(--card);
+}
+
+.grid-header {
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  color: white;
+  font-weight: 800;
+  font-size: 13px;
+  padding: 12px 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.grid-employee {
+  background: var(--card);
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-left: 12px;
+}
+
+.employee-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid currentColor;
+}
+
+.grid-cell.drop-zone {
+  outline: 3px dashed var(--primary);
+  outline-offset: -3px;
+  background: rgba(0,172,193,0.1);
+}
+
+.entry-tag {
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 800;
+  text-align: center;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  position: relative;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.entry-tag:hover {
+  transform: scale(1.05);
+}
+
+.entry-tag .remove {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  width: 18px;
+  height: 18px;
+  background: var(--danger);
+  color: white;
+  border-radius: 50%;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.entry-tag:hover .remove {
+  display: flex;
+}
+
+.notification-item {
+  background: var(--bg);
+  padding: 16px;
+  border-radius: 12px;
+  margin-bottom: 12px;
+  border-left: 4px solid var(--primary);
+  transition: all 0.2s;
+}
+
+.notification-item:hover {
+  transform: translateX(4px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.notification-item.urgent { border-left-color: var(--danger); }
+.notification-item.warning { border-left-color: var(--warning); }
+.notification-item.success { border-left-color: var(--success); }
+
+.notification-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+  margin-bottom: 8px;
+}
+
+.notification-title {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--text);
+}
+
+.notification-message {
+  font-size: 14px;
+  color: var(--text-light);
+  line-height: 1.5;
+  margin-bottom: 8px;
+}
+
+.notification-meta {
+  display: flex;
+  gap: 16px;
+  font-size: 12px;
+  color: var(--text-light);
+  font-weight: 600;
+}
+
+.toast {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  background: var(--card);
+  border: 2px solid var(--primary);
+  border-radius: 16px;
+  padding: 16px 20px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+  transform: translateX(400px);
+  opacity: 0;
+  transition: all 0.3s;
+  z-index: 1000;
+  font-weight: 700;
+}
+
+.toast.show {
+  transform: translateX(0);
+  opacity: 1;
+}
+
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.5);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+  padding: 20px;
+}
+
+.modal.active {
+  display: flex;
+}
+
+.modal-content {
+  background: var(--card);
+  border-radius: 24px;
+  padding: 32px;
+  max-width: 600px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  animation: modalSlide 0.3s;
+}
+
+@keyframes modalSlide {
+  from {
+    transform: translateY(-50px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.modal-title {
+  font-size: 24px;
+  font-weight: 900;
+  color: var(--text);
+}
+
+.modal-close {
+  background: transparent;
+  border: none;
+  font-size: 32px;
+  color: var(--text-light);
+  cursor: pointer;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.2s;
+}
+
+.modal-close:hover {
+  background: var(--bg);
+  color: var(--text);
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.stat-card {
+  background: var(--card);
+  padding: 20px;
+  border-radius: 16px;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  transition: all 0.2s;
+}
+
+.stat-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+}
+
+.stat-value {
+  font-size: 36px;
+  font-weight: 900;
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 8px;
+}
+
+.stat-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-light);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+}
+
+.empty-icon {
+  font-size: 64px;
+  margin-bottom: 16px;
+  opacity: 0.3;
+}
+
+.empty-text {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-light);
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-top">
+    <div class="header-title">
+      <h1>Daer Admin Pro</h1>
+      <div class="header-subtitle">Dienstplan & Benachrichtigungen verwalten</div>
+    </div>
+    <div class="header-actions">
+      <button class="btn-icon" id="themeBtn" title="Theme wechseln">🌓</button>
+    </div>
+  </div>
+  
+  <div class="tabs">
+    <button class="tab active" data-tab="dashboard">📊 Dashboard</button>
+    <button class="tab" data-tab="plan">📅 Dienstplan</button>
+    <button class="tab" data-tab="employees">👥 Mitarbeiter</button>
+    <button class="tab" data-tab="templates">🎨 Vorlagen</button>
+    <button class="tab" data-tab="notifications">🔔 Benachrichtigungen</button>
+  </div>
+</div>
+
+<div class="container">
+  
+  <div id="tab-dashboard" class="tab-content active">
+    <div class="stats-grid" id="dashboardStats"></div>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">⚡ Schnellaktionen</div>
+      </div>
+      <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:16px">
+        <button class="btn btn-primary" onclick="switchTab('plan')">📅 Dienstplan bearbeiten</button>
+        <button class="btn btn-primary" onclick="switchTab('employees')">👥 Mitarbeiter verwalten</button>
+        <button class="btn btn-primary" onclick="switchTab('notifications')">🔔 Nachricht erstellen</button>
+        <button class="btn btn-secondary" onclick="copyWeek1()">📋 Woche 1 kopieren</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="tab-plan" class="tab-content">
+    <div class="card">
+      <div class="card-header" style="flex-wrap:wrap; gap:12px">
+        <div>
+          <div class="card-title">📅 Dienstplan (4 Wochen)</div>
+          <div style="font-size:12px; color:var(--text-light); font-weight:700; margin-top:6px" id="planMetaLine">—</div>
+        </div>
+        <div style="display:flex; flex-wrap:wrap; gap:10px; align-items:center">
+          <select class="form-select" id="planSelect" style="min-width:260px"></select>
+          <button class="btn btn-secondary" onclick="createNextDraft()">➕ Neuer Entwurf</button>
+          <button class="btn btn-primary" onclick="publishCurrentPlan()">🚀 Veröffentlichen</button>
+          <button class="btn btn-secondary" onclick="archiveCurrentPlan()">🗄️ Archivieren</button>
+          <button class="btn btn-secondary" onclick="copyWeek1()">W1 → W2-W4</button>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Start-Montag</label>
+        <input type="date" class="form-input" id="planStartDate">
+      </div>
+    </div>
+    <div id="planWeeks"></div>
+  </div>
+
+  <div id="tab-employees" class="tab-content">
+    <div class="layout-grid">
+      <div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">➕ Neuer Mitarbeiter</div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Name</label>
+            <input type="text" class="form-input" id="empName" placeholder="z.B. Max Mustermann">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Farbe</label>
+            <input type="color" class="form-color" id="empColor" value="#4cc9f0">
+          </div>
+          <button class="btn btn-primary" style="width:100%" onclick="addEmployee()">Hinzufügen</button>
+        </div>
+      </div>
+      <div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">👥 Mitarbeiter-Liste</div>
+          </div>
+          <div id="employeesList"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="tab-templates" class="tab-content">
+    <div class="layout-grid">
+      <div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">➕ Neue Vorlage</div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Name</label>
+            <input type="text" class="form-input" id="tplName" placeholder="z.B. Einsatz Früh">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Typ</label>
+            <select class="form-select" id="tplType">
+              <option value="einsatz">Einsatz</option>
+              <option value="urlaub">Urlaub</option>
+              <option value="krank">Krank</option>
+              <option value="frei">Frei</option>
+              <option value="sonst">Sonstiges</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Farbe</label>
+            <input type="color" class="form-color" id="tplColor" value="#4cc9f0">
+          </div>
+          <button class="btn btn-primary" style="width:100%" onclick="addTemplate()">Hinzufügen</button>
+        </div>
+      </div>
+      <div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">🎨 Vorlagen-Liste</div>
+          </div>
+          <div class="chips" id="templatesList"></div>
+          <div style="margin-top:16px; padding:12px; background:var(--bg); border-radius:12px; font-size:13px; color:var(--text-light)">
+            💡 <strong>Tipp:</strong> Vorlagen per Drag & Drop auf den Kalender ziehen
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="tab-notifications" class="tab-content">
+    <div class="layout-grid">
+      <div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">➕ Neue Benachrichtigung</div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Typ</label>
+            <select class="form-select" id="notifType">
+              <option value="info">ℹ️ Info</option>
+              <option value="warning">⚠️ Warnung</option>
+              <option value="urgent">🚨 Dringend</option>
+              <option value="success">✅ Erfolg</option>
+              <option value="event">📅 Event</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Titel</label>
+            <input type="text" class="form-input" id="notifTitle" placeholder="z.B. Wichtige Mitteilung">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Nachricht</label>
+            <textarea class="form-input" id="notifMessage" rows="4" placeholder="Deine Nachricht..." style="resize:vertical"></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label" style="display:flex; align-items:center; gap:8px">
+              <input type="checkbox" id="notifExpires">
+              Automatisch löschen nach
+            </label>
+            <select class="form-select" id="notifExpireDays" disabled>
+              <option value="1">1 Tag</option>
+              <option value="3">3 Tage</option>
+              <option value="7" selected>7 Tage</option>
+              <option value="14">14 Tage</option>
+              <option value="30">30 Tage</option>
+            </select>
+          </div>
+          <button class="btn btn-primary" style="width:100%" onclick="createNotification()">Erstellen & auf TV anzeigen</button>
+        </div>
+      </div>
+      <div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">🔔 Aktive Benachrichtigungen</div>
+          </div>
+          <div id="notificationsList"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div class="modal" id="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <div class="modal-title" id="modalTitle">Modal</div>
+      <button class="modal-close" onclick="closeModal()">×</button>
+    </div>
+    <div id="modalBody"></div>
+  </div>
+</div>
+
+<script type="module">
+const firebaseConfig = {
+  apiKey: "AIzaSyDgjZr2yrOrbl2dUoY26fl8EenOL0Hh-H4",
+  authDomain: "daer-b525e.firebaseapp.com",
+  databaseURL: "https://daer-b525e-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "daer-b525e",
+  storageBucket: "daer-b525e.firebasestorage.app",
+  messagingSenderId: "992532370590",
+  appId: "1:992532370590:web:185d52a3dc6338b3ee978f"
+};
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, set, onValue, get } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+// ✅ V2 (Enterprise) + Legacy (für Anzeige/TV etc.)
+const v2Ref = ref(db, "dienstplan_v2");
+const legacyRef = ref(db, "dienstplan");
+const notificationsRef = ref(db, "notifications");
+
+let store = { employees: [], templates: [], plans: {}, activePlanId: "" };
+let notifications = [];
+let currentPlanId = "";
+
+const $ = id => document.getElementById(id);
+
+const savedTheme = localStorage.getItem('admin-theme') || 'light';
+if (savedTheme === 'dark') document.body.classList.add('dark');
+
+$('themeBtn').onclick = () => {
+  document.body.classList.toggle('dark');
+  const theme = document.body.classList.contains('dark') ? 'dark' : 'light';
+  localStorage.setItem('admin-theme', theme);
+  showToast(theme === 'dark' ? '🌙 Dunkel-Modus' : '☀️ Hell-Modus');
+};
+
+function showToast(msg) {
+  $('toast').textContent = msg;
+  $('toast').classList.add('show');
+  setTimeout(() => $('toast').classList.remove('show'), 3000);
+}
+
+function openModal(title, body) {
+  $('modalTitle').textContent = title;
+  $('modalBody').innerHTML = body;
+  $('modal').classList.add('active');
+}
+
+window.closeModal = () => $('modal').classList.remove('active');
+
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.onclick = () => switchTab(tab.dataset.tab);
+});
+
+window.switchTab = (tabName) => {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelector(`[data-tab="${tabName}"]`)?.classList.add('active');
+  document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
+  $(`tab-${tabName}`)?.classList.add('active');
+};
+
+const esc = s => (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const todayISO = () => new Date().toISOString().slice(0,10);
+const addDays = (iso, days) => { const d=new Date(iso); d.setDate(d.getDate()+days); return d.toISOString().slice(0,10); };
+const firstMondayOfNextMonth = (iso) => {
+  const base = new Date(iso);
+  // first day of next calendar month
+  const d = new Date(base.getFullYear(), base.getMonth() + 1, 1);
+  // JS: Sunday=0, Monday=1 ... Saturday=6
+  const delta = (1 - d.getDay() + 7) % 7; // days to next Monday (or 0 if already Monday)
+  d.setDate(d.getDate() + delta);
+  return d.toISOString().slice(0,10);
+};
+
+const formatDate = iso => new Date(iso).toLocaleDateString('de-DE');
+const isDark = hex => {
+  if (!hex || hex[0]!=='#') return false;
+  const r=parseInt(hex.slice(1,3),16), g=parseInt(hex.slice(3,5),16), b=parseInt(hex.slice(5,7),16);
+  return (0.2126*r+0.7152*g+0.0722*b)/255<0.6;
+};
+
+const nowId = () => String(Date.now());
+
+function getCurrentPlan() {
+  return store.plans?.[currentPlanId] || null;
+}
+
+function planLabel(id, p) {
+  const statusIcon = p.status === 'published' ? '✅' : (p.status === 'archived' ? '🗄️' : '📝');
+  const end = addDays(p.start, 27); // 4 Wochen
+  return `${statusIcon} ${formatDate(p.start)} – ${formatDate(end)} • ${p.status}`;
+}
+
+async function saveStore() {
+  await set(v2Ref, store);
+}
+
+async function writeLegacyFromPlan(planId) {
+  const p = store.plans?.[planId];
+  if (!p) return;
+  const legacy = {
+    start: p.start || todayISO(),
+    employees: store.employees || [],
+    templates: store.templates || [],
+    assignments: p.assignments || {}
+  };
+  await set(legacyRef, legacy);
+}
+
+function ensureDefaults() {
+  store.employees = store.employees || [];
+  store.templates = store.templates || [];
+  store.plans = store.plans || {};
+
+  if (store.employees.length === 0) store.employees = [{name:"Papa", color:"#4cc9f0"}];
+  if (store.templates.length === 0) {
+    store.templates = [
+      {name:"Einsatz", type:"einsatz", color:"#4cc9f0"},
+      {name:"Urlaub", type:"urlaub", color:"#f9c74f"},
+      {name:"Krank", type:"krank", color:"#f94144"},
+      {name:"Frei", type:"frei", color:"#43aa8b"}
+    ];
+  }
+
+  // wenn noch kein Plan existiert: ersten published Plan erstellen
+  const planIds = Object.keys(store.plans);
+  if (planIds.length === 0) {
+    const id = nowId();
+    store.plans[id] = {
+      start: todayISO(),
+      status: "published",
+      createdAt: new Date().toISOString(),
+      publishedAt: new Date().toISOString(),
+      assignments: {}
+    };
+    store.activePlanId = id;
+  }
+
+  if (!store.activePlanId || !store.plans[store.activePlanId]) {
+    // fallback: nimm neuesten published, sonst irgendeinen
+    const published = Object.entries(store.plans).filter(([_,p])=>p.status==='published').sort((a,b)=> (b[1].publishedAt||'').localeCompare(a[1].publishedAt||''));
+    store.activePlanId = published[0]?.[0] || Object.keys(store.plans)[0];
+  }
+}
+
+async function migrateIfNeeded(v2Snap) {
+  // Wenn v2 existiert -> fertig
+  if (v2Snap.exists()) return v2Snap.val();
+
+  // Sonst: Legacy lesen und in v2 umziehen
+  const legacySnap = await get(legacyRef);
+  if (legacySnap.exists()) {
+    const legacy = legacySnap.val();
+    const id = nowId();
+    const migrated = {
+      employees: legacy.employees || [],
+      templates: legacy.templates || [],
+      plans: {
+        [id]: {
+          start: legacy.start || todayISO(),
+          status: "published",
+          createdAt: new Date().toISOString(),
+          publishedAt: new Date().toISOString(),
+          assignments: legacy.assignments || {}
+        }
+      },
+      activePlanId: id
+    };
+    await set(v2Ref, migrated);
+    return migrated;
+  }
+
+  // Sonst komplett neu
+  const fresh = { employees: [], templates: [], plans: {}, activePlanId: "" };
+  return fresh;
+}
+
+function renderPlanSelector() {
+  const sel = $('planSelect');
+  if (!sel) return;
+
+  const entries = Object.entries(store.plans || {});
+  // Sort: published first, then draft, then archived; innerhalb nach start desc
+  const rank = s => (s==='published'?0:(s==='draft'?1:2));
+  entries.sort((a,b)=>{
+    const ra = rank(a[1].status), rb = rank(b[1].status);
+    if (ra!==rb) return ra-rb;
+    return (b[1].start||'').localeCompare(a[1].start||'');
+  });
+
+  sel.innerHTML = entries.map(([id,p]) => `<option value="${esc(id)}">${esc(planLabel(id,p))}</option>`).join('');
+  sel.value = currentPlanId || store.activePlanId || entries[0]?.[0] || "";
+
+  sel.onchange = (e) => {
+    currentPlanId = e.target.value;
+    render();
+  };
+}
+
+function renderPlanMetaLine() {
+  const line = $('planMetaLine');
+  const p = getCurrentPlan();
+  if (!line) return;
+  if (!p) { line.textContent = '—'; return; }
+
+  const statusText = p.status === 'published' ? 'Veröffentlicht' : (p.status === 'archived' ? 'Archiviert' : 'Entwurf');
+  const lockText = (p.status !== 'draft') ? ' (schreibgeschützt – duplizieren zum Ändern)' : '';
+  const activeMark = (currentPlanId === store.activePlanId) ? ' • ⭐ aktiv' : '';
+  line.textContent = `${statusText}${lockText}${activeMark}`;
+}
+
+function setPlanInputsState() {
+  const p = getCurrentPlan();
+  const startInput = $('planStartDate');
+  if (!startInput) return;
+  const editable = p && p.status === 'draft';
+  startInput.disabled = !editable;
+  startInput.title = editable ? '' : 'Nur Entwürfe sind editierbar. Dupliziere den Plan.';
+}
+
+function renderDashboard() {
+  const p = store.plans?.[store.activePlanId] || getCurrentPlan();
+  const templates = new Map((store.templates || []).map(t => [t.name, t]));
+  const stats = {einsatz:0, urlaub:0, krank:0, frei:0};
+  Object.values((p?.assignments) || {}).forEach(items => {
+    (items||[]).forEach(name => {
+      const tpl = templates.get(name);
+      if (tpl && tpl.type==='urlaub') stats.urlaub++;
+      else if (tpl && tpl.type==='krank') stats.krank++;
+      else if (tpl && tpl.type==='frei') stats.frei++;
+      else stats.einsatz++;
+    });
+  });
+
+  const ds = $('dashboardStats');
+  if (!ds) return;
+  ds.innerHTML = `
+    <div class="stat-card"><div class="stat-value">${stats.einsatz}</div><div class="stat-label">💼 Einsätze</div></div>
+    <div class="stat-card"><div class="stat-value">${stats.urlaub}</div><div class="stat-label">🏖️ Urlaub</div></div>
+    <div class="stat-card"><div class="stat-value">${stats.krank}</div><div class="stat-label">🤒 Krank</div></div>
+    <div class="stat-card"><div class="stat-value">${stats.frei}</div><div class="stat-label">✨ Frei</div></div>
+    <div class="stat-card"><div class="stat-value">${(store.employees||[]).length}</div><div class="stat-label">👥 Mitarbeiter</div></div>
+    <div class="stat-card"><div class="stat-value">${notifications.length}</div><div class="stat-label">🔔 Nachrichten</div></div>
+  `;
+}
+
+function renderEmployees() {
+  const list = $('employeesList');
+  if (!list) return;
+  const employees = store.employees || [];
+  if (employees.length === 0) {
+    list.innerHTML = '<div class="empty-state"><div class="empty-icon">👥</div><div class="empty-text">Noch keine Mitarbeiter</div></div>';
+    return;
+  }
+  list.innerHTML = employees.map((emp,idx) => `
+    <div class="employee-item">
+      <div class="employee-avatar" style="background:${emp.color}">${esc(emp.name).charAt(0).toUpperCase()}</div>
+      <input class="form-input employee-name" value="${esc(emp.name)}" onchange="updateEmployee(${idx},this.value,'${emp.color}')">
+      <input type="color" class="form-color" value="${emp.color}" onchange="updateEmployee(${idx},'${esc(emp.name)}',this.value)">
+      <button class="btn btn-danger" onclick="deleteEmployee(${idx})">×</button>
+    </div>
+  `).join('');
+}
+
+function renderTemplates() {
+  const list = $('templatesList');
+  if (!list) return;
+  const templates = store.templates || [];
+  if (templates.length === 0) {
+    list.innerHTML = '<div class="empty-state"><div class="empty-icon">🎨</div><div class="empty-text">Noch keine Vorlagen</div></div>';
+    return;
+  }
+  list.innerHTML = templates.map((tpl,idx) => `
+    <div class="chip" draggable="true" ondragstart="dragStart(event,${idx})" style="background:${tpl.color}33; color:${isDark(tpl.color)?'#fff':'#000'}; border-color:${tpl.color}">
+      <strong>${esc(tpl.name)}</strong>
+      <span style="opacity:0.7">${tpl.type}</span>
+      <button class="chip-remove" onclick="deleteTemplate(${idx})">×</button>
+    </div>
+  `).join('');
+}
+
+function renderPlan() {
+  const container = $('planWeeks');
+  if (!container) return;
+
+  const p = getCurrentPlan();
+  if (!p) {
+    container.innerHTML = '<div class="empty-state"><div class="empty-icon">📅</div><div class="empty-text">Kein Plan vorhanden</div></div>';
+    return;
+  }
+
+  const days = ['Mo','Di','Mi','Do','Fr','Sa'];
+  const employees = store.employees || [];
+  const templates = new Map((store.templates||[]).map(t=>[t.name,t]));
+  const assignments = p.assignments || {};
+
+  $('planStartDate').value = p.start || todayISO();
+  $('planStartDate').onchange = async (e) => {
+    const cur = getCurrentPlan();
+    if (!cur || cur.status !== 'draft') return;
+    cur.start = e.target.value;
+    await saveStore();
+    render();
+    showToast('✅ Startdatum gespeichert');
+  };
+
+  container.innerHTML = [0,1,2,3].map(week => {
+    const weekStart = addDays(p.start, week*7);
+    const weekEnd = addDays(weekStart, 5);
+    return `
+      <div class="calendar-week">
+        <div class="week-header">
+          <div class="week-title">Woche ${week+1}</div>
+          <div class="week-date">${formatDate(weekStart)} - ${formatDate(weekEnd)}</div>
+        </div>
+        <div class="calendar-grid">
+          <div class="grid-header">MA</div>
+          ${days.map(day=>`<div class="grid-header">${day}</div>`).join('')}
+          ${employees.map((emp,empIdx)=>`
+            <div class="grid-employee">
+              <span class="employee-dot" style="color:${emp.color}"></span>
+              ${esc(emp.name)}
+            </div>
+            ${days.map((_,dayIdx)=>{
+              const key=`${week}-${empIdx}-${dayIdx}`;
+              const items=assignments[key]||[];
+              const clickable = (p.status === 'draft');
+              const clickAttr = clickable ? `onclick="quickPick('${key}')"` : `onclick="viewCell('${key}')"`
+              return `
+                <div class="grid-cell" data-key="${key}" ondrop="drop(event)" ondragover="allowDrop(event)" ondragleave="dragLeave(event)" ${clickAttr}>
+                  ${items.map((name,itemIdx)=>{
+                    const tpl=templates.get(name)||{name,color:emp.color};
+                    const canRemove = (p.status === 'draft');
+                    const removeBtn = canRemove ? `<div class="remove" onclick="event.stopPropagation(); removeEntry('${key}',${itemIdx})">×</div>` : '';
+                    return `<div class="entry-tag" style="background:${tpl.color}; color:${isDark(tpl.color)?'#fff':'#000'}">
+                      ${esc(name)}
+                      ${removeBtn}
+                    </div>`;
+                  }).join('')}
+                </div>
+              `;
+            }).join('')}
+          `).join('')}
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function render() {
+  renderPlanSelector();
+  renderPlanMetaLine();
+  setPlanInputsState();
+  renderDashboard();
+  renderEmployees();
+  renderTemplates();
+  renderPlan();
+  renderNotifications();
+}
+
+// ---------- CRUD: Mitarbeiter / Vorlagen (global) ----------
+window.addEmployee = async () => {
+  const name = $('empName').value.trim();
+  const color = $('empColor').value;
+  if (!name) { showToast('❌ Bitte Namen eingeben'); return; }
+  store.employees = store.employees || [];
+  store.employees.push({name, color});
+  $('empName').value = '';
+  await saveStore();
+  showToast('✅ Mitarbeiter gespeichert');
+};
+
+window.updateEmployee = async (idx,name,color) => { store.employees[idx]={name,color}; await saveStore(); };
+window.deleteEmployee = async (idx) => { if (!confirm('Mitarbeiter wirklich löschen?')) return; store.employees.splice(idx,1); await saveStore(); };
+
+window.addTemplate = async () => {
+  const name = $('tplName').value.trim();
+  const type = $('tplType').value;
+  const color = $('tplColor').value;
+  if (!name) { showToast('❌ Bitte Namen eingeben'); return; }
+  store.templates = store.templates || [];
+  if (store.templates.some(t=>t.name.toLowerCase()===name.toLowerCase())) {
+    showToast('❌ Vorlage existiert bereits'); return;
+  }
+  store.templates.push({name, type, color});
+  $('tplName').value = '';
+  await saveStore();
+  showToast('✅ Vorlage gespeichert');
+};
+
+window.deleteTemplate = async (idx) => { if (!confirm('Vorlage wirklich löschen?')) return; store.templates.splice(idx,1); await saveStore(); };
+
+// ---------- Plan-Enterprise Aktionen ----------
+window.createNextDraft = async () => {
+  const src = getCurrentPlan();
+  if (!src) { showToast('❌ Kein Plan ausgewählt'); return; }
+
+  const newId = nowId();
+  const baseStart = src.start || todayISO();
+
+  store.plans[newId] = {
+    start: firstMondayOfNextMonth(baseStart),
+    status: "draft",
+    createdAt: new Date().toISOString(),
+    assignments: JSON.parse(JSON.stringify(src.assignments || {}))
+  };
+
+  currentPlanId = newId;
+  await saveStore();
+  showToast('📝 Neuer Entwurf erstellt');
+  render();
+};
+
+window.publishCurrentPlan = async () => {
+  const p = getCurrentPlan();
+  if (!p) { showToast('❌ Kein Plan ausgewählt'); return; }
+  if (p.status !== 'draft') { showToast('❌ Nur Entwürfe können veröffentlicht werden'); return; }
+  if (!confirm('Plan wirklich veröffentlichen? (Aktiver Plan wird ersetzt)')) return;
+
+  // Aktiven published archivieren (falls vorhanden)
+  const active = store.plans?.[store.activePlanId];
+  if (active && active.status === 'published') {
+    active.status = 'archived';
+    active.archivedAt = new Date().toISOString();
+  }
+
+  p.status = 'published';
+  p.publishedAt = new Date().toISOString();
+  store.activePlanId = currentPlanId;
+
+  await saveStore();
+  await writeLegacyFromPlan(currentPlanId); // für alte Anzeige
+  showToast('🚀 Plan veröffentlicht!');
+  render();
+};
+
+window.archiveCurrentPlan = async () => {
+  const p = getCurrentPlan();
+  if (!p) { showToast('❌ Kein Plan ausgewählt'); return; }
+  if (p.status === 'archived') { showToast('ℹ️ Plan ist schon archiviert'); return; }
+  if (!confirm('Plan wirklich archivieren?')) return;
+
+  p.status = 'archived';
+  p.archivedAt = new Date().toISOString();
+
+  if (store.activePlanId === currentPlanId) {
+    // Wenn aktiver Plan archiviert wird: aktiven Plan entfernen
+    store.activePlanId = "";
+  }
+
+  await saveStore();
+  showToast('🗄️ Archiviert');
+  render();
+};
+
+// ---------- Drag&Drop / Zellen ----------
+let draggedTemplateIdx = null;
+
+window.dragStart = (e,idx) => { draggedTemplateIdx=idx; e.dataTransfer.effectAllowed='copy'; };
+
+window.allowDrop = (e) => {
+  const p = getCurrentPlan();
+  if (!p || p.status !== 'draft') return;
+  e.preventDefault();
+  e.target.closest('.grid-cell')?.classList.add('drop-zone');
+};
+
+window.dragLeave = (e) => { e.target.closest('.grid-cell')?.classList.remove('drop-zone'); };
+
+window.drop = async (e) => {
+  const p = getCurrentPlan();
+  if (!p || p.status !== 'draft') return;
+
+  e.preventDefault();
+  const cell = e.target.closest('.grid-cell');
+  cell?.classList.remove('drop-zone');
+  if (draggedTemplateIdx===null) return;
+
+  const key = cell.dataset.key;
+  const tpl = store.templates[draggedTemplateIdx];
+  p.assignments = p.assignments || {};
+  p.assignments[key] = p.assignments[key] || [];
+  if (!p.assignments[key].includes(tpl.name)) {
+    p.assignments[key].push(tpl.name);
+    await saveStore();
+  }
+  draggedTemplateIdx = null;
+  renderPlan(); // schnell refresh
+};
+
+window.viewCell = (key) => {
+  const p = getCurrentPlan();
+  const items = (p?.assignments?.[key] || []).map(x=>`• ${esc(x)}`).join('<br>') || '<em>Keine Einträge</em>';
+  openModal('Plan-Ansicht (schreibgeschützt)', `<div style="font-size:14px; color:var(--text-light); font-weight:700; margin-bottom:10px">Du siehst einen veröffentlichten/archivierten Plan. Zum Ändern: „Neuer Entwurf“.</div><div>${items}</div>`);
+};
+
+window.quickPick = (key) => {
+  const p = getCurrentPlan();
+  if (!p || p.status !== 'draft') { viewCell(key); return; }
+
+  const templates = store.templates || [];
+  if (templates.length===0) { showToast('❌ Erst Vorlagen erstellen'); return; }
+  const options = templates.map(t=>`<option value="${esc(t.name)}">${esc(t.name)}</option>`).join('');
+  openModal('Vorlage hinzufügen', `
+    <select class="form-select" id="quickPickSelect" style="margin-bottom:16px">${options}</select>
+    <button class="btn btn-primary" style="width:100%" onclick="addQuickPick('${key}')">Hinzufügen</button>
+  `);
+};
+
+window.addQuickPick = async (key) => {
+  const p = getCurrentPlan();
+  if (!p || p.status !== 'draft') return;
+
+  const name = $('quickPickSelect').value;
+  p.assignments = p.assignments || {};
+  p.assignments[key] = p.assignments[key] || [];
+  if (!p.assignments[key].includes(name)) {
+    p.assignments[key].push(name);
+    await saveStore();
+  }
+  closeModal();
+  renderPlan();
+};
+
+window.removeEntry = async (key,idx) => {
+  const p = getCurrentPlan();
+  if (!p || p.status !== 'draft') return;
+
+  p.assignments[key].splice(idx,1);
+  if (p.assignments[key].length===0) delete p.assignments[key];
+  await saveStore();
+  renderPlan();
+};
+
+window.copyWeek1 = async () => {
+  const p = getCurrentPlan();
+  if (!p || p.status !== 'draft') { showToast('❌ Nur im Entwurf kopierbar'); return; }
+  if (!confirm('Woche 1 nach 2-4 kopieren?')) return;
+
+  const employees = store.employees || [];
+  p.assignments = p.assignments || {};
+  for (let empIdx=0; empIdx<employees.length; empIdx++) {
+    for (let day=0; day<6; day++) {
+      const source = p.assignments[`0-${empIdx}-${day}`] || [];
+      for (let week=1; week<4; week++) {
+        p.assignments[`${week}-${empIdx}-${day}`] = [...source];
+      }
+    }
+  }
+  await saveStore();
+  showToast('✅ Woche 1 kopiert!');
+  renderPlan();
+};
+
+// ---------- Notifications (wie gehabt) ----------
+window.createNotification = async () => {
+  const type = $('notifType').value;
+  const title = $('notifTitle').value.trim();
+  const message = $('notifMessage').value.trim();
+  const expires = $('notifExpires').checked;
+  const days = parseInt($('notifExpireDays').value);
+  if (!title || !message) { showToast('❌ Bitte Titel und Nachricht eingeben'); return; }
+  const now = new Date();
+  const expiresAt = expires ? new Date(now.getTime()+days*24*60*60*1000).toISOString() : null;
+  const notif = { type, title, message, createdAt:now.toISOString(), expiresAt, createdBy:'Admin', id:Date.now() };
+  notifications.push(notif);
+  try {
+    await set(notificationsRef, notifications);
+    showToast('✅ Benachrichtigung erstellt!');
+    $('notifTitle').value = '';
+    $('notifMessage').value = '';
+  } catch(e) {
+    showToast('❌ Fehler beim Speichern');
+  }
+};
+
+$('notifExpires').onchange = (e) => { $('notifExpireDays').disabled = !e.target.checked; };
+
+function renderNotifications() {
+  const list = $('notificationsList');
+  if (!list) return;
+  const active = notifications.filter(n => !n.expiresAt || new Date(n.expiresAt) > new Date());
+  if (active.length===0) {
+    list.innerHTML = '<div class="empty-state"><div class="empty-icon">🔔</div><div class="empty-text">Noch keine Benachrichtigungen</div></div>';
+    return;
+  }
+  const icons = {info:'ℹ️', warning:'⚠️', urgent:'🚨', success:'✅', event:'📅'};
+  list.innerHTML = active.map((n,idx)=>`
+    <div class="notification-item ${n.type}">
+      <div class="notification-header">
+        <div style="display:flex; align-items:center; gap:12px">
+          <span style="font-size:24px">${icons[n.type]||'ℹ️'}</span>
+          <div class="notification-title">${esc(n.title)}</div>
+        </div>
+        <button class="btn btn-danger" onclick="deleteNotification(${idx})">×</button>
+      </div>
+      <div class="notification-message">${esc(n.message)}</div>
+      <div class="notification-meta">
+        <span>📅 ${formatDate(n.createdAt)}</span>
+        ${n.expiresAt ? `<span>⏰ Bis ${formatDate(n.expiresAt)}</span>` : ''}
+        <span>👤 ${n.createdBy}</span>
+      </div>
+    </div>
+  `).join('');
+}
+
+window.deleteNotification = async (idx) => {
+  if (!confirm('Benachrichtigung wirklich löschen?')) return;
+  notifications.splice(idx,1);
+  try {
+    await set(notificationsRef, notifications);
+    showToast('✅ Benachrichtigung gelöscht');
+  } catch(e) {
+    showToast('❌ Fehler beim Löschen');
+  }
+};
+
+// ---------- Init ----------
+async function loadData() {
+  // Plan-Daten
+  onValue(v2Ref, async (snap) => {
+    store = await migrateIfNeeded(snap);
+    ensureDefaults();
+    // currentPlanId setzen: aktiv, sonst erster
+    currentPlanId = store.activePlanId || Object.keys(store.plans||{})[0] || "";
+    // legacy initial einmal schreiben (wenn leer)
+    await saveStore();
+    if (store.activePlanId) await writeLegacyFromPlan(store.activePlanId);
+    render();
+  });
+
+  // Notifications
+  onValue(notificationsRef, (snap) => {
+    notifications = snap.exists() ? (snap.val() || []) : [];
+    renderNotifications();
+    renderDashboard();
+  });
+}
+
+loadData();
+</script>
+
+</body>
+</html>
