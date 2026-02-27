@@ -1,0 +1,569 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Daer – Dienstleister | TV Pro</title>
+<style>
+html,body{margin:0;height:100%;background:#0b1020;color:#fff;font-family:Arial,Helvetica,sans-serif;overflow:hidden}
+.wrapper{height:100%;padding:2vh 2vw;box-sizing:border-box}
+.top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+h1{margin:0;font-size:3vh;letter-spacing:.5px}
+.meta{font-size:1.4vh;opacity:.82;text-align:right}
+.meta .clock{font-size:2.0vh;font-weight:800}
+.weeks{
+  margin-top:2vh; height:84vh;
+  display:grid; grid-template-columns:repeat(2,1fr); grid-template-rows:repeat(2,1fr);
+  gap:1.6vh;
+}
+.week{background:#141c30;border-radius:16px;padding:1vh 1vw;display:flex;flex-direction:column}
+.weekTitle{display:flex;justify-content:space-between;align-items:center;margin-bottom:.8vh;font-size:1.6vh;font-weight:800}
+.grid{flex:1;display:grid;grid-template-columns:12vw repeat(6,1fr);border:1px solid #2b3a55;border-radius:12px;overflow:hidden}
+.grid > div{border:1px solid #2b3a55;padding:.55vh .45vw;font-size:1.05vh;display:flex;align-items:center;justify-content:center;text-align:center}
+.head{background:#1c2842;font-weight:900}
+.emp{justify-content:flex-start;gap:8px;padding-left:.6vw;font-weight:900}
+.dot{width:10px;height:10px;border-radius:50%}
+.box{width:100%;padding:.25vh .35vw;border-radius:10px;font-weight:900}
+.todayGlow{
+  position:relative;
+  outline:3px solid rgba(0,255,204,.85);
+  box-shadow:0 0 24px rgba(0,255,204,.45);
+  animation:pulse 2.2s ease-in-out infinite;
+}
+@keyframes pulse{0%,100%{box-shadow:0 0 18px rgba(0,255,204,.25)}50%{box-shadow:0 0 32px rgba(0,255,204,.55)}}
+.stats{
+  position:fixed;right:2vw;bottom:1.2vh;
+  font-size:1.35vh;opacity:.85;background:rgba(20,28,48,.65);
+  border:1px solid rgba(255,255,255,.10);border-radius:14px;padding:8px 10px;
+}
+
+/* Notification Bell */
+.notif-bell{
+  position:fixed;right:2vw;top:2vh;
+  width:5vh;height:5vh;
+  background:rgba(20,28,48,.85);
+  border:2px solid rgba(255,255,255,.15);
+  border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:2.5vh;
+  cursor:pointer;
+  transition:all 0.3s;
+}
+.notif-bell:hover{
+  background:rgba(76,201,240,.25);
+  transform:scale(1.1);
+}
+.notif-bell.has-notifications{
+  animation:ring 2s infinite;
+}
+@keyframes ring{
+  0%,100%{transform:rotate(0deg)}
+  10%,30%{transform:rotate(-15deg)}
+  20%,40%{transform:rotate(15deg)}
+  50%{transform:rotate(0deg)}
+}
+.notif-badge{
+  position:absolute;
+  top:-5px;right:-5px;
+  background:#ef4444;
+  color:#fff;
+  font-size:1.2vh;
+  font-weight:900;
+  padding:2px 6px;
+  border-radius:10px;
+  min-width:20px;
+  text-align:center;
+}
+
+/* Notification Panel */
+.notif-panel{
+  position:fixed;
+  top:0;right:-35vw;
+  width:35vw;
+  height:100%;
+  background:rgba(20,28,48,.95);
+  backdrop-filter:blur(10px);
+  border-left:2px solid rgba(255,255,255,.15);
+  padding:3vh 2vw;
+  overflow-y:auto;
+  transition:right 0.4s cubic-bezier(0.68,-0.55,0.265,1.55);
+  z-index:1000;
+}
+.notif-panel.open{
+  right:0;
+}
+.notif-panel-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:3vh;
+  padding-bottom:2vh;
+  border-bottom:2px solid rgba(255,255,255,.15);
+}
+.notif-panel-title{
+  font-size:2.5vh;
+  font-weight:900;
+}
+.notif-close{
+  background:transparent;
+  border:none;
+  color:#fff;
+  font-size:3vh;
+  font-weight:900;
+  cursor:pointer;
+  opacity:.7;
+  transition:opacity 0.3s;
+}
+.notif-close:hover{
+  opacity:1;
+}
+
+.notif-item{
+  background:rgba(28,40,66,.8);
+  border-radius:12px;
+  padding:1.5vh 1vw;
+  margin-bottom:1.5vh;
+  border-left:4px solid #4cc9f0;
+  animation:slideIn 0.5s;
+}
+@keyframes slideIn{
+  from{transform:translateX(100px);opacity:0}
+  to{transform:translateX(0);opacity:1}
+}
+.notif-item.urgent{border-left-color:#ef4444}
+.notif-item.warning{border-left-color:#f59e0b}
+.notif-item.success{border-left-color:#10b981}
+.notif-item.event{border-left-color:#8b5cf6}
+
+.notif-item-header{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin-bottom:8px;
+}
+.notif-icon{
+  font-size:2.5vh;
+}
+.notif-title{
+  font-size:1.8vh;
+  font-weight:900;
+  flex:1;
+}
+.notif-time{
+  font-size:1.2vh;
+  opacity:.7;
+}
+.notif-message{
+  font-size:1.5vh;
+  line-height:1.5;
+  opacity:.9;
+  margin-bottom:8px;
+}
+.notif-meta{
+  font-size:1.2vh;
+  opacity:.6;
+  display:flex;
+  gap:15px;
+}
+
+/* Scrolling Ticker */
+.ticker{
+  position:fixed;
+  bottom:8vh;
+  left:0;
+  right:0;
+  background:rgba(76,201,240,.15);
+  border-top:2px solid rgba(76,201,240,.5);
+  border-bottom:2px solid rgba(76,201,240,.5);
+  padding:1vh 0;
+  overflow:hidden;
+  display:none;
+}
+.ticker.active{
+  display:block;
+}
+.ticker-content{
+  display:inline-block;
+  white-space:nowrap;
+  animation:scroll 30s linear infinite;
+  font-size:1.8vh;
+  font-weight:800;
+}
+@keyframes scroll{
+  from{transform:translateX(100%)}
+  to{transform:translateX(-100%)}
+}
+.ticker-item{
+  display:inline-block;
+  margin-right:5vw;
+}
+.ticker-icon{
+  display:inline-block;
+  margin-right:10px;
+}
+
+/* Popup Notification */
+.popup-notif{
+  position:fixed;
+  top:-30vh;
+  left:50%;
+  transform:translateX(-50%);
+  width:50vw;
+  background:rgba(20,28,48,.95);
+  border:2px solid rgba(76,201,240,.5);
+  border-radius:16px;
+  padding:2vh 2vw;
+  box-shadow:0 10px 40px rgba(0,0,0,.5);
+  transition:top 0.5s cubic-bezier(0.68,-0.55,0.265,1.55);
+  z-index:999;
+}
+.popup-notif.show{
+  top:10vh;
+}
+.popup-notif.urgent{border-color:#ef4444;background:rgba(239,68,68,.15)}
+.popup-notif.warning{border-color:#f59e0b;background:rgba(245,158,11,.15)}
+.popup-notif.success{border-color:#10b981;background:rgba(16,185,129,.15)}
+</style>
+</head>
+<body>
+<div class="wrapper">
+  <div class="top">
+    <div>
+      <h1>Daer – Dienstleister</h1>
+      <div style="font-size:1.35vh;opacity:.75">Dienstplan • 4 Wochen • Live</div>
+    </div>
+    <div class="meta">
+      <div class="clock" id="clock"></div>
+      <div id="month"></div>
+      <div id="weather"></div>
+    </div>
+  </div>
+
+  <div class="weeks" id="weeks"></div>
+</div>
+
+<!-- Notification Bell -->
+<div class="notif-bell" id="notifBell">
+  🔔
+  <div class="notif-badge" id="notifBadge" style="display:none">0</div>
+</div>
+
+<!-- Notification Panel -->
+<div class="notif-panel" id="notifPanel">
+  <div class="notif-panel-header">
+    <div class="notif-panel-title">🔔 Benachrichtigungen</div>
+    <button class="notif-close" id="notifClose">×</button>
+  </div>
+  <div id="notifList"></div>
+</div>
+
+<!-- Scrolling Ticker -->
+<div class="ticker" id="ticker">
+  <div class="ticker-content" id="tickerContent"></div>
+</div>
+
+<!-- Popup Notification -->
+<div class="popup-notif" id="popupNotif">
+  <div style="display:flex;align-items:start;gap:15px">
+    <div id="popupIcon" style="font-size:4vh"></div>
+    <div style="flex:1">
+      <div id="popupTitle" style="font-size:2.5vh;font-weight:900;margin-bottom:8px"></div>
+      <div id="popupMessage" style="font-size:1.8vh;opacity:.9"></div>
+    </div>
+  </div>
+</div>
+
+<div class="stats" id="stats">…</div>
+
+<script type="module">
+const firebaseConfig = {
+  apiKey: "AIzaSyDgjZr2yrOrbl2dUoY26fl8EenOL0Hh-H4",
+  authDomain: "daer-b525e.firebaseapp.com",
+  databaseURL: "https://daer-b525e-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "daer-b525e",
+  storageBucket: "daer-b525e.firebasestorage.app",
+  messagingSenderId: "992532370590",
+  appId: "1:992532370590:web:185d52a3dc6338b3ee978f"
+};
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, onValue, query, limitToLast } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+const planRef = ref(db,"dienstplan");
+const eventsRef = query(ref(db,"events"), limitToLast(1));
+const notificationsRef = ref(db, "notifications");
+
+const $ = (id)=>document.getElementById(id);
+
+let notifications = [];
+
+function updateClock(){
+  const now=new Date();
+  $("clock").textContent = now.toLocaleTimeString("de-DE");
+}
+setInterval(updateClock,1000); updateClock();
+
+function updateMonth(startISO){
+  if(!startISO) return;
+  const d=new Date(startISO);
+  $("month").textContent = d.toLocaleDateString("de-DE",{month:"long", year:"numeric"});
+}
+
+async function loadWeather(){
+  const url="https://api.open-meteo.com/v1/forecast?latitude=52.69&longitude=13.17&current_weather=true";
+  try{
+    const res=await fetch(url,{cache:"no-store"});
+    const j=await res.json();
+    $("weather").textContent = "Velten 🌤 " + Math.round(j.current_weather.temperature) + "°C";
+  }catch(e){
+    $("weather").textContent = "Velten 🌤 …";
+  }
+}
+setInterval(loadWeather, 10*60*1000); loadWeather();
+
+function todayISO(){
+  const d=new Date(); const p=n=>String(n).padStart(2,"0");
+  return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`;
+}
+function diffDays(aIso,bIso){
+  const a=new Date(aIso); const b=new Date(bIso);
+  return Math.floor((b-a)/(1000*60*60*24));
+}
+
+function render(plan){
+  const weeksEl = $("weeks");
+  weeksEl.innerHTML = "";
+  updateMonth(plan.start);
+
+  const age = plan.start ? diffDays(plan.start, todayISO()) : -1;
+  const currentWeek = (age>=0 && age<28) ? Math.floor(age/7) : -1;
+  const currentDay  = (age>=0 && age<28) ? (age%7) : -1;
+
+  const templates = plan.templates || [];
+  const tByName = new Map(templates.map(t=>[t.name,t]));
+
+  let stats = {einsatz:0, urlaub:0, krank:0, frei:0};
+
+  for(let w=0; w<4; w++){
+    const week = document.createElement("div");
+    week.className="week";
+    const weekStart = addDays(plan.start, w*7);
+    week.innerHTML = `<div class="weekTitle"><span>Woche ${w+1}</span><span style="opacity:.7;font-weight:700">${weekStart}</span></div>`;
+
+    const grid = document.createElement("div");
+    grid.className="grid";
+
+    grid.appendChild(head("Mitarbeiter"));
+    ["Mo","Di","Mi","Do","Fr","Sa"].forEach(d=>grid.appendChild(head(d)));
+
+    (plan.employees||[]).forEach((emp,r)=>{
+      const empCell = document.createElement("div");
+      empCell.className="emp head";
+      empCell.innerHTML = `<span class="dot" style="background:${emp.color}"></span><span>${escapeHtml(emp.name)}</span>`;
+      grid.appendChild(empCell);
+
+      for(let d=0; d<6; d++){
+        const k = `${w}-${r}-${d}`;
+        const cell = document.createElement("div");
+        const items = (plan.assignments && plan.assignments[k]) ? plan.assignments[k] : [];
+
+        if(w===currentWeek && d===currentDay){ cell.classList.add("todayGlow"); }
+
+        if(items.length){
+          items.slice(0,2).forEach(name=>{
+            const tpl = tByName.get(name) || {name, type:"einsatz", color: emp.color};
+            const box = document.createElement("div");
+            box.className="box";
+            box.style.background = tpl.color;
+            box.style.color = isDark(tpl.color) ? "#fff" : "#081018";
+            box.textContent = name;
+
+            if(tpl.type==="urlaub") stats.urlaub++;
+            else if(tpl.type==="krank") stats.krank++;
+            else if(tpl.type==="frei") stats.frei++;
+            else stats.einsatz++;
+
+            cell.appendChild(box);
+          });
+        }
+
+        grid.appendChild(cell);
+      }
+    });
+
+    week.appendChild(grid);
+    weeksEl.appendChild(week);
+  }
+
+  $("stats").textContent =
+    `Einsatz: ${stats.einsatz} • Urlaub: ${stats.urlaub} • Krank: ${stats.krank} • Frei: ${stats.frei}`;
+
+  document.documentElement.requestFullscreen?.().catch(()=>{});
+}
+
+function head(t){
+  const d=document.createElement("div");
+  d.className="head";
+  d.textContent=t;
+  return d;
+}
+function escapeHtml(s){
+  return (s??"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;");
+}
+function addDays(iso, days){
+  if(!iso) return "";
+  const d=new Date(iso); d.setDate(d.getDate()+days);
+  return d.toISOString().slice(0,10);
+}
+function isDark(hex){
+  if(!hex || hex[0]!=="#" || hex.length<7) return false;
+  const r=parseInt(hex.slice(1,3),16), g=parseInt(hex.slice(3,5),16), b=parseInt(hex.slice(5,7),16);
+  const lum=(0.2126*r+0.7152*g+0.0722*b)/255;
+  return lum<0.55;
+}
+
+// Notifications System
+function updateNotificationBadge(){
+  const active = notifications.filter(n => {
+    if(!n.expiresAt) return true;
+    return new Date(n.expiresAt) > new Date();
+  });
+  
+  const badge = $("notifBadge");
+  const bell = $("notifBell");
+  
+  if(active.length > 0){
+    badge.textContent = active.length;
+    badge.style.display = "block";
+    bell.classList.add("has-notifications");
+  }else{
+    badge.style.display = "none";
+    bell.classList.remove("has-notifications");
+  }
+}
+
+function renderNotifications(){
+  const list = $("notifList");
+  if(!list) return;
+  
+  const active = notifications.filter(n => {
+    if(!n.expiresAt) return true;
+    return new Date(n.expiresAt) > new Date();
+  });
+  
+  if(active.length === 0){
+    list.innerHTML = `
+      <div style="text-align:center;padding:4vh 2vw;opacity:.5">
+        <div style="font-size:6vh;margin-bottom:2vh">📭</div>
+        <div style="font-size:1.8vh;font-weight:700">Keine Benachrichtigungen</div>
+      </div>
+    `;
+    return;
+  }
+  
+  const icons = {info:'ℹ️', warning:'⚠️', urgent:'🚨', success:'✅', event:'📅'};
+  
+  list.innerHTML = active.map(n => {
+    const created = new Date(n.createdAt).toLocaleString('de-DE');
+    const expires = n.expiresAt ? new Date(n.expiresAt).toLocaleString('de-DE') : null;
+    
+    return `
+      <div class="notif-item ${n.type}">
+        <div class="notif-item-header">
+          <div class="notif-icon">${icons[n.type] || 'ℹ️'}</div>
+          <div class="notif-title">${escapeHtml(n.title)}</div>
+        </div>
+        <div class="notif-message">${escapeHtml(n.message)}</div>
+        <div class="notif-meta">
+          <span>📅 ${created}</span>
+          ${expires ? `<span>⏰ Bis ${expires}</span>` : ''}
+        </div>
+      </div>
+    `;
+  }).join('');
+  
+  updateTicker(active);
+}
+
+function updateTicker(active){
+  if(!active || active.length === 0){
+    $("ticker").classList.remove("active");
+    return;
+  }
+  
+  const icons = {info:'ℹ️', warning:'⚠️', urgent:'🚨', success:'✅', event:'📅'};
+  const urgent = active.filter(n => n.type === 'urgent' || n.type === 'warning');
+  
+  if(urgent.length > 0){
+    const ticker = $("ticker");
+    const content = $("tickerContent");
+    
+    content.innerHTML = urgent.map(n => 
+      `<span class="ticker-item"><span class="ticker-icon">${icons[n.type]}</span><strong>${escapeHtml(n.title)}:</strong> ${escapeHtml(n.message)}</span>`
+    ).join('');
+    
+    ticker.classList.add("active");
+  }else{
+    $("ticker").classList.remove("active");
+  }
+}
+
+function showPopupNotification(notif){
+  const icons = {info:'ℹ️', warning:'⚠️', urgent:'🚨', success:'✅', event:'📅'};
+  const popup = $("popupNotif");
+  
+  $("popupIcon").textContent = icons[notif.type] || 'ℹ️';
+  $("popupTitle").textContent = notif.title;
+  $("popupMessage").textContent = notif.message;
+  
+  popup.className = `popup-notif ${notif.type}`;
+  popup.classList.add("show");
+  
+  setTimeout(() => {
+    popup.classList.remove("show");
+  }, 8000);
+}
+
+// Notification Panel Toggle
+$("notifBell").onclick = () => {
+  $("notifPanel").classList.toggle("open");
+};
+
+$("notifClose").onclick = () => {
+  $("notifPanel").classList.remove("open");
+};
+
+// Listen to notifications
+let lastNotifCount = 0;
+onValue(notificationsRef, (snap) => {
+  if(snap.exists()){
+    const newNotifications = snap.val() || [];
+    
+    // Check for new notifications
+    if(newNotifications.length > lastNotifCount && lastNotifCount > 0){
+      const newest = newNotifications[newNotifications.length - 1];
+      showPopupNotification(newest);
+    }
+    
+    notifications = newNotifications;
+    lastNotifCount = notifications.length;
+    
+    updateNotificationBadge();
+    renderNotifications();
+  }
+});
+
+// live plan
+onValue(planRef,(snap)=>{ if(snap.exists()) render(snap.val()); });
+
+// Keyboard shortcut: N for notifications
+document.addEventListener('keydown', (e) => {
+  if(e.key === 'n' || e.key === 'N'){
+    $("notifPanel").classList.toggle("open");
+  }
+});
+</script>
+</body>
+</html>
